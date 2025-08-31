@@ -18,7 +18,6 @@ const PaymentWidget = () => {
   const handleJoinRaffle = async () => {
     setIsLoading(true);
     try {
-      // Create checkout session for raffle entry
       const response = await paymentsAPI.createCheckoutSession({
         amount: ticketCount * 500, // $5 per ticket
         currency: 'usd',
@@ -29,12 +28,8 @@ const PaymentWidget = () => {
         }
       });
       
-      // Choose the appropriate URL based on current location
-      const currentHost = window.location.hostname;
-      const checkoutUrl = currentHost === '127.0.0.1' ? response.ipUrl : response.localhostUrl;
-      
-      // Redirect to Stripe Checkout
-      window.location.href = checkoutUrl;
+      // Redirect to Stripe Checkout using the single URL
+      window.location.href = response.checkoutUrl;
     } catch (error) {
       console.error('Error creating checkout session:', error);
       alert('Failed to process payment. Please try again.');
@@ -46,7 +41,6 @@ const PaymentWidget = () => {
   const handlePayment = async () => {
     setIsLoading(true);
     try {
-      // Create checkout session for general payment
       const response = await paymentsAPI.createCheckoutSession({
         amount: ticketCount * 500, // $5 per ticket
         currency: 'usd',
@@ -56,12 +50,8 @@ const PaymentWidget = () => {
         }
       });
       
-      // Choose the appropriate URL based on current location
-      const currentHost = window.location.hostname;
-      const checkoutUrl = currentHost === '127.0.0.1' ? response.ipUrl : response.localhostUrl;
-      
-      // Redirect to Stripe Checkout
-      window.location.href = checkoutUrl;
+      // Redirect to Stripe Checkout using the single URL
+      window.location.href = response.checkoutUrl;
     } catch (error) {
       console.error('Error creating checkout session:', error);
       alert('Failed to process payment. Please try again.');
