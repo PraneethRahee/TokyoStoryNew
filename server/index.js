@@ -29,6 +29,12 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
+
 async function connectToMongoDB() {
   try {
     const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://raheepraneeth69:LolLol999@cluster0.zegngzs.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
@@ -51,18 +57,44 @@ async function connectToMongoDB() {
 app.use('/api/stories', require('./routes/stories'));
 app.use('/api/payments', require('./routes/payments'));
 
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/build')));
-  
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+// Test route to verify server is working
+app.get('/api/test', (req, res) => {
+  console.log('✅ API test route accessed');
+  res.json({ 
+    message: 'Server is working!', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    port: PORT
   });
-}
+});
 
+// Add a simple health check route
+app.get('/api/health', (req, res) => {
+  console.log('✅ Health check route accessed');
+  res.json({ 
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
+
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Something went wrong!' });
 });
+
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from React build
+  app.use(express.static(path.join(__dirname, '../client/build')));
+  
+  // Handle client-side routing - serve index.html for all non-API routes
+  // This must be the LAST route to avoid intercepting API routes
+  app.get('*', (req, res) => {
+    console.log('Serving React app for route:', req.path);
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+  });
+}
 
 async function startServer() {
   await connectToMongoDB();
