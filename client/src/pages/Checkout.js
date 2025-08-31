@@ -44,12 +44,8 @@ const Checkout = () => {
         }
       });
 
-      // Choose the appropriate URL based on current location
-      const currentHost = window.location.hostname;
-      const checkoutUrl = currentHost === '127.0.0.1' ? response.ipUrl : response.localhostUrl;
-      
-      // Redirect to Stripe Checkout
-      window.location.href = checkoutUrl;
+      // Redirect to Stripe Checkout using the single URL
+      window.location.href = response.checkoutUrl;
     } catch (error) {
       console.error('Error creating checkout session:', error);
       alert('Failed to process checkout. Please try again.');
