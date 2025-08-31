@@ -10,6 +10,23 @@ router.post('/create-checkout-session', async (req, res) => {
       return res.status(400).json({ message: 'Invalid amount. Minimum $1.00 required.' });
     }
 
+    // Dynamically detect the current domain
+    const protocol = req.get('x-forwarded-proto') || req.protocol;
+    const host = req.get('x-forwarded-host') || req.get('host');
+    const baseUrl = `${protocol}://${host}`;
+    
+    console.log('Payment session creation:', {
+      protocol,
+      host,
+      baseUrl,
+      originalUrl: req.originalUrl,
+      headers: {
+        'x-forwarded-proto': req.get('x-forwarded-proto'),
+        'x-forwarded-host': req.get('x-forwarded-host'),
+        host: req.get('host')
+      }
+    });
+
     const sessionData = {
       payment_method_types: ['card'],
       line_items: [
@@ -27,24 +44,15 @@ router.post('/create-checkout-session', async (req, res) => {
       ],
       mode: 'payment',
       metadata: metadata,
+      success_url: `${baseUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/payment-cancelled`,
     };
 
-    const localhostSession = await stripe.checkout.sessions.create({
-      ...sessionData,
-      success_url: `http://localhost:3000/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `http://localhost:3000/payment-cancelled`,
-    });
-
-    const ipSession = await stripe.checkout.sessions.create({
-      ...sessionData,
-      success_url: `http://127.0.0.1:3000/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `http://127.0.0.1:3000/payment-cancelled`,
-    });
+    const session = await stripe.checkout.sessions.create(sessionData);
 
     res.json({ 
-      localhostUrl: localhostSession.url,
-      ipUrl: ipSession.url,
-      sessionId: localhostSession.id
+      checkoutUrl: session.url,
+      sessionId: session.id
     });
   } catch (error) {
     console.error('Error creating checkout session:', error);
