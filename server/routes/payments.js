@@ -10,21 +10,12 @@ router.post('/create-checkout-session', async (req, res) => {
       return res.status(400).json({ message: 'Invalid amount. Minimum $1.00 required.' });
     }
 
-    // Dynamically detect the current domain
-    const protocol = req.get('x-forwarded-proto') || req.protocol;
-    const host = req.get('x-forwarded-host') || req.get('host');
-    const baseUrl = `${protocol}://${host}`;
+    // Use frontend domain for success/cancel URLs
+    const frontendUrl = process.env.FRONTEND_URL || 'https://tokyo-story-h4ty.vercel.app';
     
     console.log('Payment session creation:', {
-      protocol,
-      host,
-      baseUrl,
-      originalUrl: req.originalUrl,
-      headers: {
-        'x-forwarded-proto': req.get('x-forwarded-proto'),
-        'x-forwarded-host': req.get('x-forwarded-host'),
-        host: req.get('host')
-      }
+      frontendUrl,
+      originalUrl: req.originalUrl
     });
 
     const sessionData = {
@@ -44,15 +35,16 @@ router.post('/create-checkout-session', async (req, res) => {
       ],
       mode: 'payment',
       metadata: metadata,
-      success_url: `${baseUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/payment-cancelled`,
+      success_url: `${frontendUrl}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${frontendUrl}/payment-cancelled`,
     };
 
     const session = await stripe.checkout.sessions.create(sessionData);
 
     res.json({ 
       checkoutUrl: session.url,
-      sessionId: session.id
+      sessionId: session.id,
+      frontendUrl
     });
   } catch (error) {
     console.error('Error creating checkout session:', error);
