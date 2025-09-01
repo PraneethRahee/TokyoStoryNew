@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, ArrowLeft, Clock } from 'lucide-react';
-import { paymentsAPI } from '../utils/api';
+import { paymentsAPI, authAPI } from '../utils/api';
 import { useCart } from '../context/CartContext';
 import { usePurchase } from '../context/PurchaseContext';
+import { useAuth } from '../context/AuthContext';
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { clearCart } = useCart();
   const { addPurchase } = usePurchase();
+  const { user, isAuthenticated } = useAuth();
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,10 +24,30 @@ const PaymentSuccess = () => {
     
     if (cartItems.length > 0) {
       addPurchase(cartItems);
+      
+      // Add purchased stories to user's database if authenticated
+      if (isAuthenticated && user) {
+        const addStoriesToDatabase = async () => {
+          try {
+            // Add each story to user's purchased list
+            for (const item of cartItems) {
+              if (item.id) {
+                await authAPI.purchaseStory(item.id);
+              }
+            }
+            console.log('Successfully added purchased stories to user database');
+          } catch (error) {
+            console.error('Error adding stories to user database:', error);
+            // Don't show error to user as payment was successful
+          }
+        };
+        
+        addStoriesToDatabase();
+      }
     }
     
     clearCart();
-  }, [clearCart, addPurchase]);
+  }, [clearCart, addPurchase, isAuthenticated, user]);
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -120,7 +142,7 @@ const PaymentSuccess = () => {
               marginBottom: '1.5rem'
             }}
           >
-            Thank you for your purchase. Your tickets have been added to your account.
+            Thank you for your purchase! Your stories have been added to your library.
           </p>
 
           {/* Countdown Timer */}
@@ -237,25 +259,34 @@ const PaymentSuccess = () => {
           )}
 
           <div className="space-y-4">
-            <Link
-              to="/"
-              className="inline-flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#ec4899',
-                color: 'white',
-                fontWeight: '500',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '0.5rem',
-                textDecoration: 'none',
-                transition: 'background-color 0.2s'
-              }}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Go to Home Page
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/"
+                className="inline-flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#ec4899',
+                  color: 'white',
+                  fontWeight: '500',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '0.5rem',
+                  textDecoration: 'none',
+                  transition: 'background-color 0.2s'
+                }}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Go to Home Page
+              </Link>
+              
+              <Link
+                to="/purchased"
+                className="inline-flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+              >
+                View My Stories
+              </Link>
+            </div>
             
             <div 
               className="text-sm text-gray-500"

@@ -35,6 +35,17 @@ export const storiesAPI = {
     }
   },
 
+  // Get stories by user
+  getByUser: async (userId) => {
+    try {
+      const response = await api.get(`/stories/user/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user stories:', error);
+      return [];
+    }
+  },
+
   // Submit new story
   submit: async (storyData) => {
     try {
@@ -45,11 +56,17 @@ export const storiesAPI = {
       formData.append('description', storyData.description);
       formData.append('image', storyData.image);
 
-      const response = await axios.post(`${API_BASE_URL}/stories/add`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // Add authorization header if token exists
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'multipart/form-data',
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await axios.post(`${API_BASE_URL}/stories/add`, formData, { headers });
       return response.data;
     } catch (error) {
       console.error('Error submitting story:', error);
@@ -79,6 +96,42 @@ export const paymentsAPI = {
     } catch (error) {
       console.error('Error getting session:', error);
       throw error;
+    }
+  },
+};
+
+// Auth API
+export const authAPI = {
+  // Get user's purchased stories
+  getPurchasedStories: async () => {
+    try {
+      const response = await api.get('/auth/purchased-stories');
+      return response.data.purchasedStories;
+    } catch (error) {
+      console.error('Error fetching purchased stories:', error);
+      return [];
+    }
+  },
+
+  // Add story to purchased list
+  purchaseStory: async (storyId) => {
+    try {
+      const response = await api.post('/auth/purchase-story', { storyId });
+      return response.data;
+    } catch (error) {
+      console.error('Error purchasing story:', error);
+      throw error;
+    }
+  },
+
+  // Get user's own published stories
+  getMyStories: async () => {
+    try {
+      const response = await api.get('/auth/my-stories');
+      return response.data.stories;
+    } catch (error) {
+      console.error('Error fetching my stories:', error);
+      return [];
     }
   },
 };

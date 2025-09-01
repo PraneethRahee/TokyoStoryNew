@@ -4,6 +4,7 @@ const Story = require('../models/Story');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 const mongoose = require('mongoose');
+const { optionalAuth } = require('../middleware/auth');
 
 if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
   cloudinary.config({
@@ -54,7 +55,18 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/add', upload.single('image'), async (req, res) => {
+// Get stories by user
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const stories = await Story.find({ userId: req.params.userId }).sort({ createdAt: -1 });
+    res.json(stories);
+  } catch (error) {
+    console.error('Error fetching user stories:', error);
+    res.status(500).json({ message: 'Error fetching user stories' });
+  }
+});
+
+router.post('/add', optionalAuth, upload.single('image'), async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) {
       return res.status(503).json({ 
@@ -102,13 +114,20 @@ router.post('/add', upload.single('image'), async (req, res) => {
       ]
     });
 
-    const story = new Story({
+    const storyData = {
       title,
       name,
       email,
       description,
       imageUrl: cloudinaryResponse.secure_url
-    });
+    };
+
+    // If user is authenticated, link the story to their account
+    if (req.user) {
+      storyData.userId = req.user._id;
+    }
+
+    const story = new Story(storyData);
 
     const savedStory = await story.save();
     res.status(201).json(savedStory);

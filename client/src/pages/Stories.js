@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { User, Calendar, CheckCircle, AlertCircle, ShoppingCart, Check } from 'lucide-react';
-import { storiesAPI } from '../utils/api';
+import { User, Calendar, CheckCircle, AlertCircle, ShoppingCart, Check, PenTool } from 'lucide-react';
+import { storiesAPI, authAPI } from '../utils/api';
 import { useCart } from '../context/CartContext';
-import { usePurchase } from '../context/PurchaseContext';
+import { useAuth } from '../context/AuthContext';
 
 const Stories = () => {
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState(null);
+  const [purchasedStories, setPurchasedStories] = useState([]);
+  const [myStories, setMyStories] = useState([]);
   const location = useLocation();
   const { addToCart } = useCart();
-  const { isStoryPurchased } = usePurchase();
+  const { user, isAuthenticated } = useAuth();
 
   const handleRefresh = () => {
     fetchStories();
@@ -24,6 +26,16 @@ const Stories = () => {
       message: `${story.title} added to cart!`
     });
     setTimeout(() => setNotification(null), 2000);
+  };
+
+  // Check if story is purchased
+  const isStoryPurchased = (storyId) => {
+    return purchasedStories.some(story => story._id === storyId);
+  };
+
+  // Check if story is published by current user
+  const isMyStory = (storyId) => {
+    return myStories.some(story => story._id === storyId);
   };
 
   // Default stories that match the design
@@ -72,6 +84,21 @@ const Stories = () => {
     }
   ];
 
+  const fetchUserData = async () => {
+    if (isAuthenticated) {
+      try {
+        const [purchased, myStoriesData] = await Promise.all([
+          authAPI.getPurchasedStories(),
+          authAPI.getMyStories()
+        ]);
+        setPurchasedStories(purchased);
+        setMyStories(myStoriesData);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    }
+  };
+
   const fetchStories = async () => {
     try {
       setLoading(true);
@@ -114,12 +141,14 @@ const Stories = () => {
 
   useEffect(() => {
     fetchStories();
-  }, []);
+    fetchUserData();
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (location.pathname === '/stories') {
       console.log('🔄 Refreshing stories on navigation...');
       fetchStories();
+      fetchUserData();
     }
   }, [location.pathname]);
 
@@ -130,6 +159,35 @@ const Stories = () => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const getStoryStatus = (story) => {
+    const storyId = story.id || story._id;
+    
+    if (isMyStory(storyId)) {
+      return {
+        type: 'my-story',
+        text: 'Your Story',
+        icon: <PenTool className="w-4 h-4" />,
+        className: 'bg-blue-500 text-white'
+      };
+    }
+    
+    if (isStoryPurchased(storyId)) {
+      return {
+        type: 'purchased',
+        text: 'Purchased',
+        icon: <Check className="w-4 h-4" />,
+        className: 'bg-green-500 text-white'
+      };
+    }
+    
+    return {
+      type: 'available',
+      text: 'Add to Cart',
+      icon: <ShoppingCart className="w-4 h-4" />,
+      className: 'bg-pink-500 hover:bg-pink-600 text-white'
+    };
   };
 
   if (loading) {
@@ -190,75 +248,91 @@ const Stories = () => {
 
         {/* Stories Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {stories.map((story) => (
-            <div key={story.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-              <div className="relative h-48 overflow-hidden">
-                <img 
-                  src={story.imageUrl} 
-                  alt={story.title}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/400x300?text=Tokyo+Lore';
-                  }}
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                  {story.title}
-                </h3>
-                <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-5">
-                  {story.description}
-                </p>
-                
-                {/* Price and Add to Cart */}
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-lg font-bold text-pink-600">
-                    ${story.price || 9.99}
-                  </span>
-                  {isStoryPurchased(story.id) ? (
-                    <button
-                      className="flex items-center space-x-1 bg-green-500 text-white px-3 py-1 rounded-lg text-sm font-medium cursor-not-allowed"
-                      disabled
-                    >
-                      <Check className="w-4 h-4" />
-                      <span>Purchased</span>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleAddToCart({ ...story, price: story.price || 9.99 })}
-                      className="flex items-center space-x-1 bg-pink-500 hover:bg-pink-600 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-200"
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                      <span>Add to Cart</span>
-                    </button>
-                  )}
-                </div>
-                
-                {/* Show author info for backend stories */}
-                {story.name && (
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+          {stories.map((story) => {
+            const status = getStoryStatus(story);
+            const storyId = story.id || story._id;
+            
+            return (
+              <div key={storyId} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={story.imageUrl} 
+                    alt={story.title}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/400x300?text=Tokyo+Lore';
+                    }}
+                  />
+                  {/* Status Badge */}
+                  <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium ${status.className}`}>
                     <div className="flex items-center space-x-1">
-                      <User className="w-3 h-3" />
-                      <span>{story.name}</span>
+                      {status.icon}
+                      <span>{status.text}</span>
                     </div>
-                    {story.createdAt && (
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="w-3 h-3" />
-                        <span>{formatDate(story.createdAt)}</span>
-                      </div>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                    {story.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-5">
+                    {story.description}
+                  </p>
+                  
+                  {/* Price and Add to Cart */}
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-lg font-bold text-pink-600">
+                      ${story.price || 9.99}
+                    </span>
+                    {status.type === 'available' ? (
+                      <button
+                        onClick={() => handleAddToCart({ ...story, price: story.price || 9.99 })}
+                        className="flex items-center space-x-1 bg-pink-500 hover:bg-pink-600 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-200"
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                        <span>Add to Cart</span>
+                      </button>
+                    ) : (
+                      <button
+                        className="flex items-center space-x-1 px-3 py-1 rounded-lg text-sm font-medium cursor-not-allowed"
+                        disabled
+                        style={{
+                          backgroundColor: status.type === 'my-story' ? '#3B82F6' : '#10B981',
+                          color: 'white'
+                        }}
+                      >
+                        {status.icon}
+                        <span>{status.text}</span>
+                      </button>
                     )}
                   </div>
-                )}
-                
-                <Link 
-                  to={`/story/${story.id}`}
-                  className="inline-block text-pink-500 hover:text-pink-600 font-medium text-sm"
-                >
-                  Read more →
-                </Link>
+                  
+                  {/* Show author info for backend stories */}
+                  {story.name && (
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                      <div className="flex items-center space-x-1">
+                        <User className="w-3 h-3" />
+                        <span>{story.name}</span>
+                      </div>
+                      {story.createdAt && (
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="w-3 h-3" />
+                          <span>{formatDate(story.createdAt)}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  <Link 
+                    to={`/story/${storyId}`}
+                    className="inline-block text-pink-500 hover:text-pink-600 font-medium text-sm"
+                  >
+                    Read more →
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Call to Action */}

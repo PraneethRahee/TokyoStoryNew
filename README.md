@@ -4,6 +4,8 @@ A full-stack storytelling platform where users can discover and share captivatin
 
 ## 🌟 Features
 
+- **User Authentication**: Secure JWT-based login and signup system
+- **User Profiles**: Manage account settings and view personal statistics
 - **Story Discovery**: Browse and search through a collection of Tokyo stories
 - **Story Submission**: Submit your own Tokyo experiences with images
 - **Image Upload**: Direct upload to Cloudinary with automatic optimization
@@ -11,6 +13,7 @@ A full-stack storytelling platform where users can discover and share captivatin
 - **Responsive Design**: Mobile-first design that works on all devices
 - **Real-time Search**: Instant search functionality across stories
 - **Modern UI**: Beautiful interface built with TailwindCSS and Shadcn components
+- **Protected Routes**: Secure access to user-specific features
 
 ## 🛠 Tech Stack
 
@@ -26,6 +29,8 @@ A full-stack storytelling platform where users can discover and share captivatin
 - **Express.js** - Web framework
 - **MongoDB** - NoSQL database
 - **Mongoose** - MongoDB object modeling
+- **JWT** - JSON Web Tokens for authentication
+- **bcryptjs** - Password hashing and verification
 - **Multer** - File upload handling
 - **Cloudinary** - Image storage and optimization
 - **Stripe** - Payment processing
@@ -79,6 +84,9 @@ A full-stack storytelling platform where users can discover and share captivatin
    # Stripe
    STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
    STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
+   
+   # JWT
+   JWT_SECRET=your-super-secret-jwt-key-here
    ```
 
 5. **Start the development servers**
@@ -98,8 +106,12 @@ tokyo-lore/
 ├── server/                 # Backend code
 │   ├── index.js           # Express server setup
 │   ├── models/            # Mongoose schemas
-│   │   └── Story.js       # Story model
+│   │   ├── Story.js       # Story model
+│   │   └── User.js        # User model
+│   ├── middleware/        # Custom middleware
+│   │   └── auth.js        # Authentication middleware
 │   └── routes/            # API routes
+│       ├── auth.js        # Authentication endpoints
 │       ├── stories.js     # Story endpoints
 │       └── payments.js    # Payment endpoints
 ├── client/                # Frontend code
@@ -117,10 +129,18 @@ tokyo-lore/
 
 ## 🔧 API Endpoints
 
+### Authentication
+- `POST /api/auth/signup` - Register new user
+- `POST /api/auth/login` - User login
+- `GET /api/auth/me` - Get current user (protected)
+- `PUT /api/auth/profile` - Update user profile (protected)
+- `POST /api/auth/change-password` - Change password (protected)
+
 ### Stories
 - `GET /api/stories` - Get all stories
 - `GET /api/stories/:id` - Get single story
-- `POST /api/stories/add` - Submit new story (with image)
+- `GET /api/stories/user/:userId` - Get stories by user
+- `POST /api/stories/add` - Submit new story (with image, optional auth)
 
 ### Payments
 - `POST /api/payments/create-checkout-session` - Create Stripe checkout

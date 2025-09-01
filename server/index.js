@@ -54,8 +54,22 @@ async function connectToMongoDB() {
   }
 }
 
+// API Routes
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/stories', require('./routes/stories'));
 app.use('/api/payments', require('./routes/payments'));
+
+// Redirect Stripe return routes from backend to frontend domain in production
+app.get(['/payment-success', '/payment-cancelled'], (req, res) => {
+  const frontendUrl = process.env.FRONTEND_URL || 'https://tokyo-story-h4ty.vercel.app';
+  if (!frontendUrl) {
+    return res.status(500).send('FRONTEND_URL is not configured');
+  }
+  const query = req.originalUrl.split('?')[1];
+  const target = `${frontendUrl}${req.path}${query ? `?${query}` : ''}`;
+  console.log(`🔁 Redirecting ${req.path} to frontend:`, target);
+  res.redirect(302, target);
+});
 
 // Test route to verify server is working
 app.get('/api/test', (req, res) => {
@@ -76,6 +90,21 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
+});
+
+// Test route to serve React app directly
+app.get('/test-react', (req, res) => {
+  console.log('🧪 Testing React app serving');
+  const indexPath = path.join(__dirname, '../client/build', 'index.html');
+  const fs = require('fs');
+  
+  if (fs.existsSync(indexPath)) {
+    console.log('✅ Serving React app from test route');
+    res.sendFile(indexPath);
+  } else {
+    console.log('❌ React app not found in test route');
+    res.status(404).json({ error: 'React app not found', path: indexPath });
+  }
 });
 
 // Error handling middleware

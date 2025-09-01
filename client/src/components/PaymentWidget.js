@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { CreditCard, Minus, Plus } from 'lucide-react';
 import { paymentsAPI } from '../utils/api';
+import { useAuth } from '../context/AuthContext';
 
 const PaymentWidget = () => {
+  const { isAuthenticated } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const [ticketCount, setTicketCount] = useState(2);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,6 +61,11 @@ const PaymentWidget = () => {
       setIsLoading(false);
     }
   };
+
+  // Don't render the widget if user is not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <>

@@ -1,13 +1,15 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MapPin, ShoppingCart, BookOpen } from 'lucide-react';
+import { MapPin, ShoppingCart, BookOpen, User, LogOut } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { usePurchase } from '../context/PurchaseContext';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const location = useLocation();
   const { getTotalItems } = useCart();
   const { purchases } = usePurchase();
+  const { user, logout, isAuthenticated } = useAuth();
 
   const isActive = (path) => {
     return location.pathname === path;
@@ -30,49 +32,95 @@ const Navbar = () => {
             >
               Home
             </Link>
-            <Link 
-              to="/stories" 
-              className={`font-medium transition-colors ${
-                isActive('/stories') ? 'text-pink-500' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Stories
-            </Link>
-            <Link 
-              to="/purchased" 
-              className={`font-medium transition-colors ${
-                isActive('/purchased') ? 'text-pink-500' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <div className="flex items-center space-x-1">
-                <BookOpen className="w-4 h-4" />
-                <span>My Stories</span>
-                {purchases.length > 0 && (
-                  <span className="bg-green-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {purchases.length}
+            {isAuthenticated && (
+              <>
+                <Link 
+                  to="/stories" 
+                  className={`font-medium transition-colors ${
+                    isActive('/stories') ? 'text-pink-500' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Stories
+                </Link>
+                <Link 
+                  to="/purchased" 
+                  className={`font-medium transition-colors ${
+                    isActive('/purchased') ? 'text-pink-500' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <div className="flex items-center space-x-1">
+                    <BookOpen className="w-4 h-4" />
+                    <span>My Stories</span>
+                    {purchases.length > 0 && (
+                      <span className="bg-green-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {purchases.length}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+                <Link 
+                  to="/submit" 
+                  className={`font-medium transition-colors ${
+                    isActive('/submit') ? 'text-pink-500' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Submit
+                </Link>
+                <Link 
+                  to="/cart" 
+                  className="relative p-2 text-gray-600 hover:text-pink-500 transition-colors"
+                >
+                  <ShoppingCart className="w-6 h-6" />
+                  {getTotalItems() > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {getTotalItems()}
+                    </span>
+                  )}
+                </Link>
+              </>
+            )}
+            
+            {/* Authentication Links */}
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <User className="w-4 h-4" />
+                  <span className="text-sm font-medium">
+                    {user?.firstName || user?.username}
                   </span>
-                )}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Link
+                    to="/profile"
+                    className="text-gray-600 hover:text-pink-500 transition-colors text-sm font-medium"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={logout}
+                    className="flex items-center space-x-1 text-gray-600 hover:text-red-500 transition-colors text-sm font-medium"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
+                  </button>
+                </div>
               </div>
-            </Link>
-            <Link 
-              to="/submit" 
-              className={`font-medium transition-colors ${
-                isActive('/submit') ? 'text-pink-500' : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Submit
-            </Link>
-            <Link 
-              to="/cart" 
-              className="relative p-2 text-gray-600 hover:text-pink-500 transition-colors"
-            >
-              <ShoppingCart className="w-6 h-6" />
-              {getTotalItems() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {getTotalItems()}
-                </span>
-              )}
-            </Link>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link
+                  to="/login"
+                  className="text-gray-600 hover:text-pink-500 transition-colors text-sm font-medium"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </nav>
         </div>
       </div>

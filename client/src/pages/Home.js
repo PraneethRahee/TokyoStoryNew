@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Camera, PenTool, Heart, Users, Award, Globe } from 'lucide-react';
+import { Camera, PenTool, Heart, Users, Award, Globe, Lock } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
+  const { isAuthenticated } = useAuth();
+  
   return (
     <div className="min-h-screen bg-white">
       
@@ -19,20 +22,41 @@ const Home = () => {
               Journey through hidden alleyways, forgotten temples, and secret corners where Tokyo's most captivating stories come alive through art, photography, and poetry.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/stories"
-                className="bg-pink-500 hover:bg-pink-600 text-white font-medium py-3 px-8 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-              >
-                <Camera className="w-4 h-4" />
-                Explore Stories
-              </Link>
-              <Link
-                to="/submit"
-                className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-8 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                <PenTool className="w-4 h-4" />
-                Share Your Story
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/stories"
+                    className="bg-pink-500 hover:bg-pink-600 text-white font-medium py-3 px-8 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                  >
+                    <Camera className="w-4 h-4" />
+                    Explore Stories
+                  </Link>
+                  <Link
+                    to="/submit"
+                    className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-8 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                    <PenTool className="w-4 h-4" />
+                    Share Your Story
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="bg-pink-500 hover:bg-pink-600 text-white font-medium py-3 px-8 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                  >
+                    <Lock className="w-4 h-4" />
+                    Login to Explore
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-8 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                    <PenTool className="w-4 h-4" />
+                    Join Tokyo Lore
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -69,6 +93,106 @@ const Home = () => {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Story Preview Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4">
+              Featured Stories
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Get a glimpse of the captivating tales that await you. Sign up to unlock the full collection and start your journey through Tokyo's hidden narratives.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {/* Story Preview Cards */}
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="relative h-48 overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" 
+                  alt="The Midnight Ramen Master"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                  <Lock className="w-8 h-8 text-white" />
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  The Midnight Ramen Master
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  In a narrow alley behind Shibuya station, an elderly chef serves the city's most secretive bowl of ramen...
+                </p>
+                <div className="text-pink-600 font-medium text-sm">
+                  Login to read full story
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="relative h-48 overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1522383225653-ed111181a951?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" 
+                  alt="Cherry Blossoms of Memory Lane"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                  <Lock className="w-8 h-8 text-white" />
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Cherry Blossoms of Memory Lane
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Every spring, locals gather at this forgotten park where century-old sakura trees bloom...
+                </p>
+                <div className="text-pink-600 font-medium text-sm">
+                  Login to read full story
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="relative h-48 overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1541961017774-22349e4a1262?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" 
+                  alt="The Underground Art Gallery"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                  <Lock className="w-8 h-8 text-white" />
+                </div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  The Underground Art Gallery
+                </h3>
+                <p className="text-gray-600 text-sm mb-4">
+                  Beneath the bustling streets of Harajuku lies a secret world where street artists...
+                </p>
+                <div className="text-pink-600 font-medium text-sm">
+                  Login to read full story
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {!isAuthenticated && (
+            <div className="text-center">
+              <Link
+                to="/signup"
+                className="bg-pink-500 hover:bg-pink-600 text-white font-medium py-3 px-8 rounded-lg transition-colors duration-200"
+              >
+                Unlock All Stories
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -117,12 +241,21 @@ const Home = () => {
           <p className="text-xl text-pink-100 mb-8 max-w-3xl mx-auto">
             Your Tokyo experience could inspire others to discover the city's hidden gems. Every story matters, every moment counts.
           </p>
-          <Link
-            to="/submit"
-            className="inline-block bg-white text-pink-600 font-medium py-4 px-8 rounded-lg hover:bg-gray-100 transition-colors duration-200 text-lg"
-          >
-            Start Writing Now
-          </Link>
+          {isAuthenticated ? (
+            <Link
+              to="/submit"
+              className="inline-block bg-white text-pink-600 font-medium py-4 px-8 rounded-lg hover:bg-gray-100 transition-colors duration-200 text-lg"
+            >
+              Start Writing Now
+            </Link>
+          ) : (
+            <Link
+              to="/signup"
+              className="inline-block bg-white text-pink-600 font-medium py-4 px-8 rounded-lg hover:bg-gray-100 transition-colors duration-200 text-lg"
+            >
+              Join to Share Stories
+            </Link>
+          )}
         </div>
       </section>
     </div>
