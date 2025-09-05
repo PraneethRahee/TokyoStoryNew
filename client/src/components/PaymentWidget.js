@@ -8,7 +8,7 @@ const PaymentWidget = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [ticketCount, setTicketCount] = useState(2);
   const [isLoading, setIsLoading] = useState(false);
-  const [userTickets, setUserTickets] = useState(56); // Mock data
+  const [userTickets, setUserTickets] = useState(56); 
 
   const handleTicketChange = (increment) => {
     const newCount = ticketCount + increment;
@@ -21,7 +21,7 @@ const PaymentWidget = () => {
     setIsLoading(true);
     try {
       const response = await paymentsAPI.createCheckoutSession({
-        amount: ticketCount * 500, // $5 per ticket
+        amount: ticketCount * 500,
         currency: 'usd',
         metadata: {
           type: 'raffle',
@@ -30,7 +30,6 @@ const PaymentWidget = () => {
         }
       });
       
-      // Redirect to Stripe Checkout using the single URL
       window.location.href = response.checkoutUrl;
     } catch (error) {
       console.error('Error creating checkout session:', error);
@@ -44,7 +43,7 @@ const PaymentWidget = () => {
     setIsLoading(true);
     try {
       const response = await paymentsAPI.createCheckoutSession({
-        amount: ticketCount * 500, // $5 per ticket
+        amount: ticketCount * 500, 
         currency: 'usd',
         metadata: {
           type: 'payment',
@@ -52,7 +51,6 @@ const PaymentWidget = () => {
         }
       });
       
-      // Redirect to Stripe Checkout using the single URL
       window.location.href = response.checkoutUrl;
     } catch (error) {
       console.error('Error creating checkout session:', error);
@@ -62,26 +60,21 @@ const PaymentWidget = () => {
     }
   };
 
-  // Don't render the widget if user is not authenticated
   if (!isAuthenticated) {
     return null;
   }
 
   return (
     <>
-      {/* Floating Payment Widget */}
       <div className="fixed bottom-4 right-4 z-50">
-        {/* Main Widget Panel */}
         {isExpanded && (
           <div className="bg-white rounded-lg shadow-lg p-6 mb-4 w-80 border border-gray-200">
-            {/* Header */}
             <div className="text-center mb-4">
               <h3 className="text-lg font-semibold text-gray-800">
                 You have {userTickets} tickets.
               </h3>
             </div>
 
-            {/* Tickets to Buy Section */}
             <div className="mb-6">
               <label className="block text-sm font-bold text-gray-800 mb-2">
                 Tickets to Buy:
@@ -112,7 +105,6 @@ const PaymentWidget = () => {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="space-y-3">
               <button
                 onClick={handleJoinRaffle}
@@ -132,7 +124,6 @@ const PaymentWidget = () => {
           </div>
         )}
 
-        {/* Floating Icon Button */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="bg-red-500 hover:bg-red-600 text-white p-3 rounded-lg shadow-lg transition-all duration-200 hover:scale-105"

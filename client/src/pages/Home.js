@@ -8,9 +8,6 @@ const Home = () => {
   
   return (
     <div className="min-h-screen bg-white">
-      
-
-      {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-white to-pink-50 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -62,7 +59,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Content Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -96,7 +92,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Story Preview Section */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -109,7 +104,6 @@ const Home = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {/* Story Preview Cards */}
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
               <div className="relative h-48 overflow-hidden">
                 <img 
@@ -196,7 +190,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -232,7 +225,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Call to Action Section */}
       <section className="py-20 bg-gradient-to-r from-pink-500 to-purple-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-white mb-6">

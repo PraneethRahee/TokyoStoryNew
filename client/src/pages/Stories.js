@@ -28,17 +28,17 @@ const Stories = () => {
     setTimeout(() => setNotification(null), 2000);
   };
 
-  // Check if story is purchased
+
   const isStoryPurchased = (storyId) => {
     return purchasedStories.some(story => story._id === storyId);
   };
 
-  // Check if story is published by current user
+  
   const isMyStory = (storyId) => {
     return myStories.some(story => story._id === storyId);
   };
 
-  // Default stories that match the design
+
   const defaultStories = [
     {
       id: '1',
@@ -104,7 +104,7 @@ const Stories = () => {
       setLoading(true);
       const data = await storiesAPI.getAll();
       
-      // Combine backend stories with default stories
+
       const backendStories = data.map(story => ({
         id: story._id || story.id,
         title: story.title,
@@ -114,11 +114,11 @@ const Stories = () => {
         createdAt: story.createdAt
       }));
       
-      // Show backend stories first, then default stories
+
       const allStories = [...backendStories, ...defaultStories];
       setStories(allStories);
       
-      // Show notification about loaded stories
+
       if (backendStories.length > 0) {
         setNotification({
           type: 'success',
@@ -137,20 +137,19 @@ const Stories = () => {
     } finally {
       setLoading(false);
     }
-  }, []); // No dependencies since it doesn't use any state/props
+  }, []);
 
   useEffect(() => {
     fetchStories();
     fetchUserData();
-  }, [isAuthenticated, fetchStories, fetchUserData]); // ✅ Include memoized functions
+  }, [isAuthenticated, fetchStories, fetchUserData]);
 
   useEffect(() => {
     if (location.pathname === '/stories') {
-      console.log('🔄 Refreshing stories on navigation...');
       fetchStories();
       fetchUserData();
     }
-  }, [location.pathname, fetchStories, fetchUserData]); // ✅ Include memoized functions
+  }, [location.pathname, fetchStories, fetchUserData]);
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -203,9 +202,8 @@ const Stories = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Main Content */}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Notification */}
         {notification && (
           <div className={`mb-6 p-4 rounded-lg ${
             notification.type === 'success' 
@@ -227,7 +225,6 @@ const Stories = () => {
           </div>
         )}
 
-        {/* Page Title and Introduction */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-6">
             Tokyo Stories
@@ -246,7 +243,6 @@ const Stories = () => {
           </button>
         </div>
 
-        {/* Stories Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {stories.map((story) => {
             const status = getStoryStatus(story);
@@ -263,7 +259,6 @@ const Stories = () => {
                       e.target.src = 'https://via.placeholder.com/400x300?text=Tokyo+Lore';
                     }}
                   />
-                  {/* Status Badge */}
                   <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium ${status.className}`}>
                     <div className="flex items-center space-x-1">
                       {status.icon}
@@ -278,8 +273,7 @@ const Stories = () => {
                   <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-5">
                     {story.description}
                   </p>
-                  
-                  {/* Price and Add to Cart */}
+
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-lg font-bold text-pink-600">
                       ${story.price || 9.99}
@@ -306,8 +300,6 @@ const Stories = () => {
                       </button>
                     )}
                   </div>
-                  
-                  {/* Show author info for backend stories */}
                   {story.name && (
                     <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
                       <div className="flex items-center space-x-1">
@@ -335,7 +327,6 @@ const Stories = () => {
           })}
         </div>
 
-        {/* Call to Action */}
         <div className="text-center mt-16">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">
             Have a story to share?

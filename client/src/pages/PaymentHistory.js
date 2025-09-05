@@ -54,7 +54,6 @@ const PaymentHistory = () => {
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Payment History</h1>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Purchases */}
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center mb-4">
               <CreditCard className="w-5 h-5 text-pink-500 mr-2" />
@@ -86,7 +85,6 @@ const PaymentHistory = () => {
             )}
           </div>
 
-          {/* Raffle */}
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center mb-4">
               <Ticket className="w-5 h-5 text-indigo-500 mr-2" />

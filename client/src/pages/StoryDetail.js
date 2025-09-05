@@ -12,7 +12,7 @@ const StoryDetail = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [readingTime, setReadingTime] = useState(0);
 
-  // Default stories for fallback
+
   const defaultStories = {
     '1': {
       id: '1',
@@ -69,7 +69,6 @@ const StoryDetail = () => {
       setLoading(true);
       setError(null);
       
-      // First try to fetch from backend
       try {
         const data = await storiesAPI.getAll();
         const backendStory = data.find(s => s._id === id);
@@ -88,7 +87,6 @@ const StoryDetail = () => {
         console.log('Backend story not found, checking default stories...');
       }
       
-      // Fallback to default stories
       const defaultStory = defaultStories[id];
       if (defaultStory) {
         setStory(defaultStory);
@@ -109,7 +107,6 @@ const StoryDetail = () => {
 
   useEffect(() => {
     if (story) {
-      // Calculate reading time (average 200 words per minute)
       const wordCount = story.description.split(' ').length;
       const estimatedTime = Math.ceil(wordCount / 200);
       setReadingTime(estimatedTime);
@@ -128,7 +125,6 @@ const StoryDetail = () => {
         url: window.location.href
       });
     } else {
-      // Fallback: copy to clipboard
       navigator.clipboard.writeText(window.location.href);
       alert('Link copied to clipboard!');
     }
@@ -174,9 +170,7 @@ const StoryDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Button */}
         <div className="mb-6 animate-slide-in-left">
           <button
             onClick={() => navigate(-1)}
@@ -187,7 +181,6 @@ const StoryDetail = () => {
           </button>
         </div>
 
-        {/* Story Header */}
         <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8 animate-fade-in-up">
           <div className="relative h-64 md:h-80 overflow-hidden">
             <img 
@@ -223,7 +216,6 @@ const StoryDetail = () => {
           </div>
         </div>
 
-        {/* Story Content */}
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8 animate-fade-in-up stagger-3">
           <div className="prose prose-lg max-w-none">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
@@ -263,7 +255,6 @@ const StoryDetail = () => {
           </div>
         </div>
 
-        {/* Call to Action */}
         <div className="bg-gradient-to-r from-pink-500 to-purple-600 rounded-xl p-8 text-center text-white animate-fade-in-up stagger-4">
           <h2 className="text-2xl font-bold mb-4">Share Your Tokyo Story</h2>
           <p className="text-pink-100 mb-6">

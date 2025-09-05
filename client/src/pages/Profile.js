@@ -110,7 +110,6 @@ const Profile = () => {
           <p className="text-gray-300">Manage your account settings</p>
         </div>
 
-        {/* Profile Information */}
         <Card className="bg-white/10 backdrop-blur-lg border-white/20">
           <CardHeader>
             <CardTitle className="text-white flex justify-between items-center">
@@ -202,7 +201,6 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* Change Password */}
         <Card className="bg-white/10 backdrop-blur-lg border-white/20">
           <CardHeader>
             <CardTitle className="text-white flex justify-between items-center">
@@ -290,7 +288,6 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* Account Stats */}
         <Card className="bg-white/10 backdrop-blur-lg border-white/20">
           <CardHeader>
             <CardTitle className="text-white">Account Statistics</CardTitle>

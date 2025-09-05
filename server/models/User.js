@@ -58,18 +58,18 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Story'
   }],
-  // Per-user cart
+
   cartItems: [cartItemSchema],
   raffleEntries: { type: Number, default: 0 },
   raffleHistory: [{
     tickets: { type: Number, required: true },
-    amount: { type: Number, required: true }, // in cents
+    amount: { type: Number, required: true }, 
     sessionId: { type: String },
     createdAt: { type: Date, default: Date.now }
   }],
   purchaseHistory: [{
     items: [purchaseItemSchema],
-    amount: { type: Number, required: true }, // in cents
+    amount: { type: Number, required: true }, 
     sessionId: { type: String },
     createdAt: { type: Date, default: Date.now }
   }]
@@ -77,7 +77,6 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Hash password before saving
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
@@ -90,12 +89,10 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Method to compare password
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to get user without password
 userSchema.methods.toJSON = function() {
   const user = this.toObject();
   delete user.password;

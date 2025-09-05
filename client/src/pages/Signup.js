@@ -26,7 +26,6 @@ const Signup = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       const from = location.state?.from?.pathname || '/';
@@ -34,7 +33,6 @@ const Signup = () => {
     }
   }, [isAuthenticated, navigate, location]);
 
-  // Handle error display
   useEffect(() => {
     if (error) {
       setErrorMessage(error);
@@ -43,7 +41,6 @@ const Signup = () => {
     }
   }, [error, clearError]);
 
-  // Clear error when component unmounts
   useEffect(() => {
     return () => clearError();
   }, [clearError]);
@@ -91,7 +88,6 @@ const Signup = () => {
       [e.target.name]: e.target.value
     });
     
-    // Clear error for this field when user starts typing
     if (errors[e.target.name]) {
       setErrors({
         ...errors,
@@ -137,14 +133,12 @@ const Signup = () => {
       />
       
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-pink-200 to-purple-200 rounded-full opacity-20 animate-pulse"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-200 to-blue-200 rounded-full opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-yellow-200 to-orange-200 rounded-full opacity-10 animate-pulse" style={{ animationDelay: '4s' }}></div>
         </div>
 
-        {/* Floating sparkles */}
         <div className="absolute inset-0 pointer-events-none">
           {[...Array(8)].map((_, i) => (
             <div
@@ -163,7 +157,6 @@ const Signup = () => {
         </div>
 
         <div className="max-w-lg w-full space-y-8 relative z-10">
-          {/* Header */}
           <div className="text-center space-y-4 animate-fade-in">
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
               <PenTool className="w-8 h-8 text-white" />
@@ -178,11 +171,9 @@ const Signup = () => {
             </div>
           </div>
 
-          {/* Signup Form */}
           <Card className="bg-white/80 backdrop-blur-lg border-0 shadow-xl rounded-2xl animate-slide-up">
             <CardContent className="p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Name Fields */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700">
@@ -239,7 +230,6 @@ const Signup = () => {
                   </div>
                 </div>
 
-                {/* Username */}
                 <div className="space-y-2">
                   <label htmlFor="username" className="block text-sm font-semibold text-gray-700">
                     Username
@@ -267,7 +257,6 @@ const Signup = () => {
                   )}
                 </div>
 
-                {/* Email */}
                 <div className="space-y-2">
                   <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
                     Email Address
@@ -295,7 +284,6 @@ const Signup = () => {
                   )}
                 </div>
 
-                {/* Password */}
                 <div className="space-y-2">
                   <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
                     Password
@@ -333,8 +321,7 @@ const Signup = () => {
                     <p className="text-red-500 text-xs mt-1">{errors.password}</p>
                   )}
                 </div>
-
-                {/* Confirm Password */}
+                  
                 <div className="space-y-2">
                   <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700">
                     Confirm Password

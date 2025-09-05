@@ -17,9 +17,8 @@ const PaymentSuccess = () => {
   const [error, setError] = useState(null);
   const [timeLeft, setTimeLeft] = useState(30);
   const sessionId = searchParams.get('session_id');
-  const processedSessions = useRef(new Set()); // Track processed sessions
+  const processedSessions = useRef(new Set());
 
-  // Clear cart on successful payment and add purchases (client state)
   useEffect(() => {
     const cartItems = JSON.parse(localStorage.getItem('tokyoLoreCart') || '[]');
     if (cartItems.length > 0) {
@@ -28,10 +27,6 @@ const PaymentSuccess = () => {
     clearCart();
   }, [clearCart, addPurchase]);
 
-  // Fetch session and persist to DB based on metadata
-  // Note: We intentionally use user?._id instead of user to prevent infinite loops
-  // when the user object reference changes but the ID remains the same
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const persistPurchase = async () => {
       if (!sessionId || !isAuthenticated || !user) {
@@ -39,19 +34,16 @@ const PaymentSuccess = () => {
         return;
       }
 
-      // Prevent processing the same session multiple times
       if (processedSessions.current.has(sessionId)) {
         setLoading(false);
         return;
       }
       try {
-        // Mark session as being processed
         processedSessions.current.add(sessionId);
         
         const s = await paymentsAPI.getSession(sessionId);
         setSession(s);
 
-        // If raffle purchase, record raffle entries
         if (s?.metadata?.type === 'raffle' && s?.metadata?.tickets) {
           try {
             await authAPI.recordRaffleEntry({
@@ -63,12 +55,9 @@ const PaymentSuccess = () => {
             console.error('Failed to record raffle entry:', e);
           }
         }
-
-        // If cart checkout, record purchase + purchased stories
         if (s?.metadata?.type === 'cart_checkout') {
           let cartItems = [];
 
-          // Prefer server-side snapshot if present
           if (s.metadata?.snapshotKey) {
             try {
               const token = localStorage.getItem('token');
@@ -83,18 +72,16 @@ const PaymentSuccess = () => {
             }
           }
 
-          // Fallback to local snapshot
           if (!Array.isArray(cartItems) || cartItems.length === 0) {
             cartItems = JSON.parse(localStorage.getItem('tokyoLoreCartSnapshot') || '[]');
           }
 
           if (Array.isArray(cartItems) && cartItems.length > 0) {
-            // Record purchase history
             try {
               const itemsPayload = cartItems.map(ci => ({
                 storyId: ci.id || ci.storyId,
                 title: ci.title,
-                price: Math.round((ci.price || 0) * 100), // in cents
+                price: Math.round((ci.price || 0) * 100),
                 quantity: ci.quantity || 1
               }));
               await authAPI.recordPurchase({
@@ -106,7 +93,6 @@ const PaymentSuccess = () => {
               console.error('Failed to record purchase history:', e);
             }
 
-            // Add purchased stories to user's purchasedStories
             try {
               const storyIds = cartItems
                 .map(ci => ci.id || ci.storyId)
@@ -127,12 +113,8 @@ const PaymentSuccess = () => {
     };
 
     persistPurchase();
-  }, [sessionId, isAuthenticated, user?._id]); // ✅ Use user._id to prevent unnecessary re-runs
+  }, [sessionId, isAuthenticated, user?._id]);
 
-  // Keep a snapshot of cart before redirect (should be set on checkout trigger)
-  // You can set this snapshot in your checkout flow when creating the session
-
-  // Countdown timer effect
   useEffect(() => {
     if (timeLeft <= 0) {
       navigate('/', { replace: true });
@@ -208,8 +190,6 @@ const PaymentSuccess = () => {
           >
             Thank you for your purchase! Your stories have been added to your library.
           </p>
-
-          {/* Countdown Timer */}
           <div 
             className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 mb-6 text-white"
             style={{
@@ -235,8 +215,7 @@ const PaymentSuccess = () => {
               >
                 {formatTime(timeLeft)}
               </div>
-              
-              {/* Progress Bar */}
+
               <div 
                 className="w-full bg-blue-400 rounded-full h-2 mb-3"
                 style={{

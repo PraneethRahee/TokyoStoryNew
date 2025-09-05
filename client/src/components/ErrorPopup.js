@@ -84,8 +84,7 @@ const ErrorPopup = ({
             </button>
           </div>
         </div>
-        
-        {/* Progress bar */}
+
         <div className="mt-3 w-full bg-gray-200 rounded-full h-1">
           <div 
             className={`h-1 rounded-full transition-all duration-300 ease-linear ${

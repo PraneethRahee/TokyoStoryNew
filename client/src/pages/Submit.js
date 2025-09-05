@@ -23,7 +23,6 @@ const Submit = () => {
       ...prev,
       [name]: value
     }));
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -35,7 +34,6 @@ const Submit = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         setErrors(prev => ({
           ...prev,
@@ -44,7 +42,6 @@ const Submit = () => {
         return;
       }
 
-      // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         setErrors(prev => ({
           ...prev,
@@ -123,10 +120,9 @@ const Submit = () => {
       
       setSuccess(true);
       
-      // Redirect to stories page after 2 seconds
       setTimeout(() => {
         console.log('🔄 Redirecting to stories page...');
-        navigate('/stories', { replace: true }); // Use replace to avoid back button issues
+        navigate('/stories', { replace: true });
       }, 2000);
     } catch (error) {
       console.error('❌ Error submitting story:', error);
@@ -163,7 +159,6 @@ const Submit = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="text-center mb-8 bg-secondary-50 py-8 rounded-lg">
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Share Your Tokyo Story
@@ -173,10 +168,8 @@ const Submit = () => {
           </p>
         </div>
 
-        {/* Form */}
         <div className="bg-white rounded-xl shadow-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name Field */}
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                 Your Name *
@@ -198,7 +191,6 @@ const Submit = () => {
               )}
             </div>
 
-            {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address *
@@ -220,7 +212,6 @@ const Submit = () => {
               )}
             </div>
 
-            {/* Title Field */}
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
                 Story Title *
@@ -242,7 +233,6 @@ const Submit = () => {
               )}
             </div>
 
-            {/* Description Field */}
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                 Your Story *
@@ -267,7 +257,6 @@ const Submit = () => {
               </p>
             </div>
 
-            {/* Image Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Story Image *
@@ -317,7 +306,6 @@ const Submit = () => {
               )}
             </div>
 
-            {/* Submit Error */}
             {errors.submit && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <p className="text-sm text-red-600 flex items-center">
@@ -327,7 +315,6 @@ const Submit = () => {
               </div>
             )}
 
-            {/* Submit Button */}
                          <button
                type="submit"
                disabled={isSubmitting}
@@ -345,7 +332,6 @@ const Submit = () => {
           </form>
         </div>
 
-        {/* Guidelines */}
         <div className="mt-8 bg-blue-50 rounded-xl p-6">
           <h3 className="text-lg font-semibold text-blue-900 mb-3">
             Story Guidelines

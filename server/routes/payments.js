@@ -50,15 +50,11 @@ router.post('/create-checkout-session', async (req, res) => {
       return res.status(400).json({ message: 'Invalid amount. Minimum $1.00 required.' });
     }
 
-    // Resolve frontend URL smartly for dev/prod
+    
     const frontendUrl = process.env.FRONTEND_URL
       || req.headers.origin
       || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'http://localhost:3000');
     
-    console.log('Payment session creation:', {
-      frontendUrl,
-      originalUrl: req.originalUrl
-    });
 
     const sessionData = {
       payment_method_types: ['card'],
@@ -121,15 +117,11 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
   switch (event.type) {
     case 'checkout.session.completed':
-      const session = event.data.object;
-      console.log('Payment successful:', session);
       break;
     case 'payment_intent.succeeded':
-      const paymentIntent = event.data.object;
-      console.log('PaymentIntent was successful:', paymentIntent);
       break;
     default:
-      console.log(`Unhandled event type ${event.type}`);
+      break;
   }
 
   res.json({ received: true });

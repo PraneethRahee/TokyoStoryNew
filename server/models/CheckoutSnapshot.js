@@ -13,7 +13,7 @@ const checkoutSnapshotSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   items: [snapshotItemSchema],
   meta: { type: Object },
-  expiresAt: { type: Date, index: { expires: '2h' } } // auto-delete after 2 hours
+  expiresAt: { type: Date, index: { expires: '2h' } }
 }, { timestamps: true });
 
 module.exports = mongoose.model('CheckoutSnapshot', checkoutSnapshotSchema);

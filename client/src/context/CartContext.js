@@ -51,10 +51,9 @@ const cartReducer = (state, action) => {
 
 export const CartProvider = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
-  const hasSynced = useRef(false); // Track if we've already synced
-  const lastUserId = useRef(null); // Track the last user ID we synced for
+  const hasSynced = useRef(false);
+  const lastUserId = useRef(null);
 
-  // Initialize state with items from localStorage
   const getInitialState = () => {
     const savedCart = localStorage.getItem('tokyoLoreCart');
     if (savedCart) {
@@ -70,25 +69,21 @@ export const CartProvider = ({ children }) => {
 
   const [state, dispatch] = useReducer(cartReducer, getInitialState());
 
-  // Save cart to localStorage whenever cart changes
   useEffect(() => {
     localStorage.setItem('tokyoLoreCart', JSON.stringify(state.items));
   }, [state.items]);
 
-  // Sync cart from server after login (only once per user)
   useEffect(() => {
     const syncFromServer = async () => {
       if (!isAuthenticated || !user?._id) return;
       
-      // Check if we've already synced for this user
       if (hasSynced.current && lastUserId.current === user._id) return;
       
-      hasSynced.current = true; // Mark as synced
-      lastUserId.current = user._id; // Track which user we synced for
+      hasSynced.current = true;
+      lastUserId.current = user._id;
       
       try {
         const items = await cartAPI.get();
-        // Map server format to client format (storyId -> id)
         const mapped = items.map(i => ({
           id: i.storyId,
           title: i.title,
@@ -99,7 +94,7 @@ export const CartProvider = ({ children }) => {
         dispatch({ type: 'SET_CART', payload: mapped });
       } catch (e) {
         console.warn('Failed to sync cart from server');
-        hasSynced.current = false; // Reset on error so it can retry
+        hasSynced.current = false;
         lastUserId.current = null;
       }
     };

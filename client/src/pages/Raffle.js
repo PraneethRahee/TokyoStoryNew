@@ -8,7 +8,7 @@ const Raffle = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  const PRICE_PER_TICKET_USD = 5; // $5 per ticket
+  const PRICE_PER_TICKET_USD = 5;
 
   const handleTicketChange = (increment) => {
     const next = ticketCount + increment;
@@ -22,7 +22,7 @@ const Raffle = () => {
       setIsLoading(true);
 
       const response = await paymentsAPI.createCheckoutSession({
-        amount: ticketCount * PRICE_PER_TICKET_USD * 100, // cents
+        amount: ticketCount * PRICE_PER_TICKET_USD * 100,
         currency: 'usd',
         metadata: {
           type: 'raffle',
@@ -40,7 +40,6 @@ const Raffle = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* background accents */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -right-32 w-80 h-80 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full opacity-20 animate-pulse" />
         <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-gradient-to-tr from-pink-200 to-indigo-200 rounded-full opacity-20 animate-pulse" style={{ animationDelay: '2s' }} />

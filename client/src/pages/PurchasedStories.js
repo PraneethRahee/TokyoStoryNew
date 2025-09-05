@@ -9,7 +9,7 @@ const PurchasedStories = () => {
   const [purchasedStories, setPurchasedStories] = useState([]);
   const [myStories, setMyStories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('purchased'); // 'purchased' or 'my-stories'
+  const [activeTab, setActiveTab] = useState('purchased'); 
 
   const fetchPurchasedStories = async () => {
     try {
@@ -113,7 +113,6 @@ Author: ${story.name}
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Page Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-4">
             My Stories
@@ -126,7 +125,6 @@ Author: ${story.name}
           </div>
         </div>
 
-        {/* Tab Navigation */}
         <div className="flex justify-center mb-8">
           <div className="bg-white rounded-lg p-1 shadow-md">
             <button
@@ -158,10 +156,8 @@ Author: ${story.name}
           </div>
         </div>
 
-        {/* Stories Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {activeTab === 'purchased' ? (
-            // Purchased Stories
             purchasedStories.map((story) => (
               <div key={story._id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                 <div className="relative h-48 overflow-hidden">
@@ -173,7 +169,6 @@ Author: ${story.name}
                       e.target.src = 'https://via.placeholder.com/400x300?text=Tokyo+Lore';
                     }}
                   />
-                  {/* Purchased Badge */}
                   <div className="absolute top-3 right-3 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium">
                     Purchased
                   </div>
@@ -186,8 +181,7 @@ Author: ${story.name}
                   <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
                     {story.description}
                   </p>
-                  
-                  {/* Story Info */}
+
                   <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
                     <div className="flex items-center space-x-1">
                       <Calendar className="w-3 h-3" />
@@ -200,8 +194,7 @@ Author: ${story.name}
                       </div>
                     )}
                   </div>
-                  
-                  {/* Action Buttons */}
+
                   <div className="flex space-x-2">
                     <Link 
                       to={`/story/${story._id}`}
@@ -222,7 +215,7 @@ Author: ${story.name}
               </div>
             ))
           ) : (
-            // My Published Stories
+
             myStories.map((story) => (
               <div key={story._id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                 <div className="relative h-48 overflow-hidden">
@@ -234,7 +227,7 @@ Author: ${story.name}
                       e.target.src = 'https://via.placeholder.com/400x300?text=Tokyo+Lore';
                     }}
                   />
-                  {/* Published Badge */}
+
                   <div className="absolute top-3 right-3 bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-medium">
                     Published
                   </div>
@@ -247,8 +240,7 @@ Author: ${story.name}
                   <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
                     {story.description}
                   </p>
-                  
-                  {/* Story Info */}
+
                   <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
                     <div className="flex items-center space-x-1">
                       <Calendar className="w-3 h-3" />
@@ -258,8 +250,7 @@ Author: ${story.name}
                       Your Story
                     </div>
                   </div>
-                  
-                  {/* Action Buttons */}
+
                   <div className="flex space-x-2">
                     <Link 
                       to={`/story/${story._id}`}
@@ -282,7 +273,6 @@ Author: ${story.name}
           )}
         </div>
 
-        {/* Call to Action */}
         <div className="text-center mt-16">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">
             Want more stories?

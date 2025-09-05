@@ -46,7 +46,6 @@ const Cart = () => {
             </button>
           </div>
 
-          {/* Cart Items */}
           <div className="space-y-6 mb-8">
             {items.map((item) => (
               <div key={item.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
@@ -92,7 +91,6 @@ const Cart = () => {
             ))}
           </div>
 
-          {/* Cart Summary */}
           <div className="border-t border-gray-200 pt-6">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xl font-semibold text-gray-900">Total:</span>

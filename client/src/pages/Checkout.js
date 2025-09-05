@@ -30,10 +30,10 @@ const Checkout = () => {
 
     setIsLoading(true);
     try {
-      // Save a snapshot of the cart for post-payment persistence (client fallback)
+      
       localStorage.setItem('tokyoLoreCartSnapshot', JSON.stringify(items));
 
-      // Create a server-side snapshot and get key
+
       let snapshotKey = null;
       try {
         const token = localStorage.getItem('token');
@@ -49,8 +49,7 @@ const Checkout = () => {
         console.warn('Snapshot creation failed, falling back to local storage snapshot');
       }
 
-      // Create checkout session with cart total
-      const totalAmount = Math.round(getTotalPrice() * 100); // Convert to cents
+      const totalAmount = Math.round(getTotalPrice() * 100); 
       
       const response = await paymentsAPI.createCheckoutSession({
         amount: totalAmount,
@@ -63,13 +62,10 @@ const Checkout = () => {
           items: items.map(item => `${item.title} (${item.quantity})`).join(', ')
         }
       });
-
-      // Redirect to Stripe Checkout using the single URL
       window.location.href = response.checkoutUrl;
     } catch (error) {
       console.error('Error creating checkout session:', error);
       alert('Failed to process checkout. Please try again.');
-      // Cleanup snapshot on failure
       localStorage.removeItem('tokyoLoreCartSnapshot');
     } finally {
       setIsLoading(false);
@@ -130,7 +126,6 @@ const Checkout = () => {
             </div>
           </div>
 
-          {/* Checkout Form */}
           <div className="bg-white rounded-lg shadow-lg p-6">
             <div className="flex items-center mb-6">
               <button

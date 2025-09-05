@@ -5,7 +5,7 @@ const PurchaseContext = createContext();
 const purchaseReducer = (state, action) => {
   switch (action.type) {
     case 'ADD_PURCHASE':
-      // Add purchased items to the list
+      
       const newPurchases = action.payload.items.map(item => ({
         ...item,
         purchaseDate: new Date().toISOString(),
@@ -39,7 +39,6 @@ export const PurchaseProvider = ({ children }) => {
     purchases: []
   });
 
-  // Load purchases from localStorage on mount
   useEffect(() => {
     const savedPurchases = localStorage.getItem('tokyoLorePurchases');
     if (savedPurchases) {
@@ -52,7 +51,6 @@ export const PurchaseProvider = ({ children }) => {
     }
   }, []);
 
-  // Save purchases to localStorage whenever purchases change
   useEffect(() => {
     localStorage.setItem('tokyoLorePurchases', JSON.stringify(state.purchases));
   }, [state.purchases]);

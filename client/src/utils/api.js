@@ -5,12 +5,6 @@ const API_BASE_URL = process.env.REACT_APP_API_URL ||
     ? 'https://tokyostorynew.onrender.com/api' 
     : '/api');
 
-// Debug logging for API configuration
-console.log('API Configuration:', {
-  REACT_APP_API_URL: process.env.REACT_APP_API_URL,
-  API_BASE_URL: API_BASE_URL,
-  NODE_ENV: process.env.NODE_ENV
-});
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -19,33 +13,21 @@ const api = axios.create({
   },
 });
 
-// Add request interceptor to log API calls
-api.interceptors.request.use(
-  (config) => {
-    console.log(`🚀 API Call: ${config.method?.toUpperCase()} ${config.url}`);
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
 
-// Stories API
+
 export const storiesAPI = {
-  // Get all stories
+
   getAll: async () => {
     try {
       const response = await api.get('/stories');
-      console.log('API Response:', response.data); // Debug log
       return response.data;
     } catch (error) {
       console.error('Error fetching stories:', error);
-      // Return empty array instead of throwing for better UX
       return [];
     }
   },
 
-  // Get single story by ID
+
   getById: async (id) => {
     try {
       const response = await api.get(`/stories/${id}`);
@@ -56,7 +38,7 @@ export const storiesAPI = {
     }
   },
 
-  // Get stories by user
+
   getByUser: async (userId) => {
     try {
       const response = await api.get(`/stories/user/${userId}`);
@@ -67,7 +49,7 @@ export const storiesAPI = {
     }
   },
 
-  // Submit new story
+
   submit: async (storyData) => {
     try {
       const formData = new FormData();
@@ -77,7 +59,7 @@ export const storiesAPI = {
       formData.append('description', storyData.description);
       formData.append('image', storyData.image);
 
-      // Add authorization header if token exists
+
       const token = localStorage.getItem('token');
       const headers = {
         'Content-Type': 'multipart/form-data',
@@ -96,9 +78,9 @@ export const storiesAPI = {
   },
 };
 
-// Payments API
+
 export const paymentsAPI = {
-  // Create checkout session
+
   createCheckoutSession: async (paymentData) => {
     try {
       const response = await api.post('/payments/create-checkout-session', paymentData);
@@ -109,7 +91,7 @@ export const paymentsAPI = {
     }
   },
 
-  // Get session details
+
   getSession: async (sessionId) => {
     try {
       const response = await api.get(`/payments/session/${sessionId}`);
@@ -121,9 +103,9 @@ export const paymentsAPI = {
   },
 };
 
-// Auth API
+
 export const authAPI = {
-  // Get user's purchased stories
+
   getPurchasedStories: async () => {
     try {
       const response = await api.get('/auth/purchased-stories');
@@ -134,7 +116,7 @@ export const authAPI = {
     }
   },
 
-  // Add story to purchased list
+
   purchaseStory: async (storyId) => {
     try {
       const response = await api.post('/auth/purchase-story', { storyId });
@@ -145,7 +127,7 @@ export const authAPI = {
     }
   },
 
-  // Bulk add stories to purchased list
+
   purchaseStories: async (storyIds) => {
     try {
       const response = await api.post('/auth/purchase-stories', { storyIds });
@@ -156,7 +138,7 @@ export const authAPI = {
     }
   },
 
-  // Record raffle entry
+
   recordRaffleEntry: async ({ tickets, amount, sessionId }) => {
     try {
       const response = await api.post('/auth/raffle-entry', { tickets, amount, sessionId });
@@ -167,7 +149,7 @@ export const authAPI = {
     }
   },
 
-  // Record cart purchase
+
   recordPurchase: async ({ items, amount, sessionId }) => {
     try {
       const response = await api.post('/auth/record-purchase', { items, amount, sessionId });
@@ -178,7 +160,7 @@ export const authAPI = {
     }
   },
 
-  // Get user's own published stories
+
   getMyStories: async () => {
     try {
       const response = await api.get('/auth/my-stories');

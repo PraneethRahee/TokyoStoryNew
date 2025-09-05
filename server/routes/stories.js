@@ -55,7 +55,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Get stories by user
 router.get('/user/:userId', async (req, res) => {
   try {
     const stories = await Story.find({ userId: req.params.userId }).sort({ createdAt: -1 });
@@ -122,7 +121,6 @@ router.post('/add', optionalAuth, upload.single('image'), async (req, res) => {
       imageUrl: cloudinaryResponse.secure_url
     };
 
-    // If user is authenticated, link the story to their account
     if (req.user) {
       storyData.userId = req.user._id;
     }
