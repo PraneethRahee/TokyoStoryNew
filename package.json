@@ -13,8 +13,7 @@
     "health-check": "node deploy/health-check.js",
     "health-check:continuous": "node deploy/health-check.js --continuous",
     "rollback": "chmod +x deploy/rollback.sh && ./deploy/rollback.sh",
-    "deploy:check": "npm run health-check && echo '✅ Pre-deployment checks passed'",
-    "postinstall": "npm run install-all"
+    "deploy:check": "npm run health-check && echo '✅ Pre-deployment checks passed'"
   },
   "keywords": [
     "react",
