@@ -15,45 +15,12 @@ app.set('trust proxy', 1);
 
 app.use(helmet());
 
-// Configure CORS for production frontend and localhost
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  'https://tokyo-story-new.vercel.app', // Vercel production domain
-  'http://localhost:3000',
-  'https://localhost:3000',
-  'http://localhost:5000',
-  'https://localhost:5000'
-].filter(Boolean);
-
+// Configure CORS to allow ALL origins
 const corsOptions = {
-  origin: function(origin, callback) {
-    console.log('CORS origin check:', { origin, allowedOrigins });
-    
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // Allow localhost for development
-    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-      return callback(null, true);
-    }
-    
-    // Check if origin is in allowed list
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    
-    // Allow Vercel preview deployments (they have random subdomains)
-    if (origin.includes('.vercel.app')) {
-      console.log('Allowing Vercel deployment:', origin);
-      return callback(null, true);
-    }
-    
-    console.log('CORS blocked origin:', origin);
-    return callback(new Error('Not allowed by CORS'));
-  },
+  origin: true, // Allow all origins
   credentials: true,
   methods: ['GET','HEAD','PUT','PATCH','POST','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 };
 
