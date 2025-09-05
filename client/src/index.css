@@ -51,6 +51,36 @@
     font-weight: 600;
     line-height: 1.2;
   }
+  
+  /* Focus management for accessibility */
+  *:focus {
+    outline: 2px solid #ec4899;
+    outline-offset: 2px;
+  }
+  
+  /* Skip link styles */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+  .sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0.5rem 1rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
 }
 
 @layer components {

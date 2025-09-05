@@ -1,123 +1,181 @@
-import React, { useState } from 'react';
-import { CreditCard, Minus, Plus, Ticket, Sparkles, CheckCircle } from 'lucide-react';
-import { paymentsAPI } from '../utils/api';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { Gift, Ticket, Star, Users } from 'lucide-react';
 
 const Raffle = () => {
-  const [ticketCount, setTicketCount] = useState(2);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const { user } = useAuth();
+  const [tickets, setTickets] = useState(1);
+  const [userTickets, setUserTickets] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  const PRICE_PER_TICKET_USD = 5;
+  useEffect(() => {
+    if (user) {
+      setUserTickets(user.raffleEntries || 0);
+    }
+  }, [user]);
 
-  const handleTicketChange = (increment) => {
-    const next = ticketCount + increment;
-    if (next >= 1 && next <= 10) setTicketCount(next);
+  const handleTicketChange = (e) => {
+    const value = parseInt(e.target.value);
+    if (value >= 1 && value <= 10) {
+      setTickets(value);
+    }
   };
 
-  const handleCheckout = async () => {
+  const handlePurchase = async () => {
+    setLoading(true);
     try {
-      setError(null);
-      setSuccess(null);
-      setIsLoading(true);
-
-      const response = await paymentsAPI.createCheckoutSession({
-        amount: ticketCount * PRICE_PER_TICKET_USD * 100,
-        currency: 'usd',
-        metadata: {
+      const response = await fetch('/api/payments/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
           type: 'raffle',
-          tickets: String(ticketCount)
-        }
+          tickets: tickets,
+          amount: tickets * 500 // $5 per ticket
+        })
       });
 
-      window.location.href = response.checkoutUrl;
-    } catch (e) {
-      setError('Failed to start checkout. Please try again.');
+      if (response.ok) {
+        const { url } = await response.json();
+        window.location.href = url;
+      } else {
+        console.error('Failed to create checkout session');
+      }
+    } catch (error) {
+      console.error('Error purchasing tickets:', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-32 -right-32 w-80 h-80 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full opacity-20 animate-pulse" />
-        <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-gradient-to-tr from-pink-200 to-indigo-200 rounded-full opacity-20 animate-pulse" style={{ animationDelay: '2s' }} />
-      </div>
-
-      <div className="max-w-2xl mx-auto relative z-10">
-        <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-4">
-            <Ticket className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">Monthly Raffle</h1>
-          <p className="text-gray-600 mt-2">Buy tickets to join the raffle and win exclusive Tokyo Lore rewards.</p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center mb-12">
+          <Gift className="w-16 h-16 text-pink-500 mx-auto mb-4" />
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Tokyo Story Raffle</h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Enter our monthly raffle for a chance to win exclusive Tokyo experiences and prizes!
+          </p>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-6">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Choose Tickets</h2>
-            <p className="text-gray-600 text-sm">You can buy between 1 and 10 tickets per checkout.</p>
+        <div className="grid md:grid-cols-2 gap-8 mb-12">
+          {/* Prize Information */}
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">This Month's Prizes</h2>
+            <div className="space-y-4">
+              <div className="flex items-center p-4 bg-yellow-50 rounded-lg">
+                <Star className="w-8 h-8 text-yellow-500 mr-4" />
+                <div>
+                  <h3 className="font-semibold text-gray-900">1st Place</h3>
+                  <p className="text-gray-600">Exclusive Tokyo food tour for 2</p>
+                </div>
+              </div>
+              <div className="flex items-center p-4 bg-gray-50 rounded-lg">
+                <Star className="w-8 h-8 text-gray-400 mr-4" />
+                <div>
+                  <h3 className="font-semibold text-gray-900">2nd Place</h3>
+                  <p className="text-gray-600">$200 Tokyo shopping voucher</p>
+                </div>
+              </div>
+              <div className="flex items-center p-4 bg-orange-50 rounded-lg">
+                <Star className="w-8 h-8 text-orange-500 mr-4" />
+                <div>
+                  <h3 className="font-semibold text-gray-900">3rd Place</h3>
+                  <p className="text-gray-600">Premium Tokyo story collection</p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4 mb-6">
+          {/* Purchase Tickets */}
+          <div className="bg-white rounded-lg shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Purchase Tickets</h2>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Number of Tickets
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={tickets}
+                onChange={handleTicketChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+              />
+              <p className="text-sm text-gray-500 mt-1">$5 per ticket (max 10 tickets)</p>
+            </div>
+
+            <div className="mb-6 p-4 bg-pink-50 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-lg font-medium text-gray-900">Total Cost:</span>
+                <span className="text-2xl font-bold text-pink-600">
+                  ${(tickets * 5).toFixed(2)}
+                </span>
+              </div>
+            </div>
+
             <button
-              className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
-              onClick={() => handleTicketChange(-1)}
-              disabled={ticketCount <= 1 || isLoading}
+              onClick={handlePurchase}
+              disabled={loading}
+              className="w-full bg-pink-500 hover:bg-pink-600 disabled:bg-pink-300 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
             >
-              <Minus className="w-4 h-4" />
-            </button>
-            <div className="text-2xl font-bold text-gray-900 w-20 text-center">{ticketCount}</div>
-            <button
-              className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg disabled:opacity-50"
-              onClick={() => handleTicketChange(1)}
-              disabled={ticketCount >= 10 || isLoading}
-            >
-              <Plus className="w-4 h-4" />
+              {loading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              ) : (
+                <>
+                  <Ticket className="w-5 h-5 mr-2" />
+                  Purchase {tickets} Ticket{tickets > 1 ? 's' : ''}
+                </>
+              )}
             </button>
           </div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <div className="text-sm text-gray-600">Price per ticket</div>
-              <div className="text-lg font-semibold text-gray-900">${PRICE_PER_TICKET_USD.toFixed(2)}</div>
+        {/* User Stats */}
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Raffle Stats</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="bg-pink-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Ticket className="w-8 h-8 text-pink-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900">{userTickets}</h3>
+              <p className="text-gray-600">Total Tickets</p>
             </div>
-            <div className="p-4 bg-purple-50 rounded-lg">
-              <div className="text-sm text-gray-600">Total</div>
-              <div className="text-lg font-semibold text-gray-900">${(ticketCount * PRICE_PER_TICKET_USD).toFixed(2)}</div>
+            <div className="text-center">
+              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Users className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900">1,247</h3>
+              <p className="text-gray-600">Total Participants</p>
+            </div>
+            <div className="text-center">
+              <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Gift className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900">3</h3>
+              <p className="text-gray-600">Prizes Available</p>
             </div>
           </div>
+        </div>
 
-          {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg">{error}</div>
-          )}
-          {success && (
-            <div className="mb-4 bg-green-50 border border-green-200 text-green-700 p-3 rounded-lg flex items-center gap-2">
-              <CheckCircle className="w-4 h-4" /> {success}
-            </div>
-          )}
-
-          <button
-            onClick={handleCheckout}
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {isLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                <CreditCard className="w-5 h-5" />
-                Pay ${ (ticketCount * PRICE_PER_TICKET_USD).toFixed(2) }
-              </>
-            )}
-          </button>
-
-          <div className="mt-6 text-sm text-gray-500 flex items-center gap-2 justify-center">
-            <Sparkles className="w-4 h-4" /> Every ticket increases your chances to win.
+        {/* Rules */}
+        <div className="mt-8 bg-white rounded-lg shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Raffle Rules</h2>
+          <div className="prose prose-gray max-w-none">
+            <ul className="space-y-2">
+              <li>• Raffle runs monthly from the 1st to the last day of each month</li>
+              <li>• Winners are drawn on the 1st of the following month</li>
+              <li>• Each ticket costs $5 and gives you one entry</li>
+              <li>• Maximum 10 tickets per person per month</li>
+              <li>• Winners will be contacted via email</li>
+              <li>• Prizes must be claimed within 30 days</li>
+              <li>• All sales are final - no refunds</li>
+            </ul>
           </div>
         </div>
       </div>

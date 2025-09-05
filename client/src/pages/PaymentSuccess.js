@@ -113,7 +113,7 @@ const PaymentSuccess = () => {
     };
 
     persistPurchase();
-  }, [sessionId, isAuthenticated, user?._id]);
+  }, [sessionId, isAuthenticated, user?._id, user]);
 
   useEffect(() => {
     if (timeLeft <= 0) {

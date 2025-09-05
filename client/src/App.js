@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import * as Sentry from '@sentry/react';
 import { CartProvider } from './context/CartContext';
 import { PurchaseProvider } from './context/PurchaseContext';
 import { AuthProvider } from './context/AuthContext';
@@ -25,14 +26,34 @@ import './index.css';
 
 function App() {
   return (
-    <AuthProvider>
-      <PurchaseProvider>
-        <CartProvider>
-          <Router>
-            <div className="App">
-              <Navbar />
-              <main>
-                <Routes>
+    <Sentry.ErrorBoundary fallback={({ error, resetError }) => (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Something went wrong</h2>
+          <p className="text-gray-600 mb-6">We're sorry for the inconvenience. Please try refreshing the page.</p>
+          <button
+            onClick={resetError}
+            className="bg-pink-500 hover:bg-pink-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    )}>
+      <AuthProvider>
+        <PurchaseProvider>
+          <CartProvider>
+            <Router>
+              <div className="App">
+                <a 
+                  href="#main-content" 
+                  className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-pink-500 text-white px-4 py-2 rounded-lg z-50"
+                >
+                  Skip to main content
+                </a>
+                <Navbar />
+                <main id="main-content">
+                  <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/stories" element={
                     <ProtectedRoute>
@@ -84,14 +105,15 @@ function App() {
                     </ProtectedRoute>
                   } />
                 </Routes>
-              </main>
-              <Footer />
-              <PaymentWidget />
-            </div>
-          </Router>
-        </CartProvider>
-      </PurchaseProvider>
-    </AuthProvider>
+                  </main>
+                  <Footer />
+                  <PaymentWidget />
+                </div>
+              </Router>
+            </CartProvider>
+          </PurchaseProvider>
+        </AuthProvider>
+    </Sentry.ErrorBoundary>
   );
 }
 

@@ -9,7 +9,12 @@
     "client": "cd client && npm start",
     "build": "cd client && npm run build",
     "install-all": "npm install && cd client && npm install",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "health-check": "node deploy/health-check.js",
+    "health-check:continuous": "node deploy/health-check.js --continuous",
+    "rollback": "chmod +x deploy/rollback.sh && ./deploy/rollback.sh",
+    "deploy:check": "npm run health-check && echo '✅ Pre-deployment checks passed'",
+    "postinstall": "npm run install-all"
   },
   "keywords": [
     "react",

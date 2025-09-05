@@ -164,6 +164,7 @@ Author: ${story.name}
                   <img 
                     src={story.imageUrl} 
                     alt={story.title}
+                    loading="lazy"
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
                       e.target.src = 'https://via.placeholder.com/400x300?text=Tokyo+Lore';
@@ -222,6 +223,7 @@ Author: ${story.name}
                   <img 
                     src={story.imageUrl} 
                     alt={story.title}
+                    loading="lazy"
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     onError={(e) => {
                       e.target.src = 'https://via.placeholder.com/400x300?text=Tokyo+Lore';

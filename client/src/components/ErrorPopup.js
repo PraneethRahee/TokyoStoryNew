@@ -53,49 +53,25 @@ const ErrorPopup = ({
   return (
     <div className="fixed top-4 right-4 z-50">
       <div
-        className={`
-          ${getColors()}
-          border rounded-lg shadow-lg p-4 max-w-sm w-full
-          transform transition-all duration-300 ease-out
-          ${isAnimating 
-            ? 'translate-x-0 opacity-100 scale-100' 
-            : 'translate-x-full opacity-0 scale-95'
-          }
-        `}
+        className={`max-w-sm w-full bg-white rounded-lg shadow-lg border-l-4 p-4 transform transition-all duration-300 ease-in-out ${
+          isAnimating ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+        } ${getColors()}`}
       >
-        <div className="flex items-start space-x-3">
+        <div className="flex items-start">
           <div className="flex-shrink-0">
             {getIcon()}
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">
-              {type === 'success' ? 'Success!' : type === 'warning' ? 'Warning!' : 'Error!'}
-            </p>
-            <p className="text-sm mt-1">
-              {message}
-            </p>
+          <div className="ml-3 flex-1">
+            <p className="text-sm font-medium">{message}</p>
           </div>
-          <div className="flex-shrink-0">
+          <div className="ml-4 flex-shrink-0">
             <button
               onClick={handleClose}
-              className="inline-flex text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600 transition-colors"
+              className="inline-flex text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600 transition ease-in-out duration-150"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
-        </div>
-
-        <div className="mt-3 w-full bg-gray-200 rounded-full h-1">
-          <div 
-            className={`h-1 rounded-full transition-all duration-300 ease-linear ${
-              type === 'success' ? 'bg-green-500' : 
-              type === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
-            }`}
-            style={{ 
-              width: isAnimating ? '0%' : '100%',
-              transition: `width ${duration}ms linear`
-            }}
-          />
         </div>
       </div>
     </div>

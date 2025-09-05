@@ -174,6 +174,7 @@ const StoryDetail = () => {
         <div className="mb-6 animate-slide-in-left">
           <button
             onClick={() => navigate(-1)}
+            aria-label="Go back to stories page"
             className="flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-200"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -186,6 +187,7 @@ const StoryDetail = () => {
             <img 
               src={story.imageUrl} 
               alt={story.title}
+              loading="lazy"
               className="w-full h-full object-cover"
               onError={(e) => {
                 e.target.src = 'https://via.placeholder.com/800x400?text=Tokyo+Lore';
@@ -226,6 +228,7 @@ const StoryDetail = () => {
               <div className="flex items-center space-x-4">
                 <button
                   onClick={handleLike}
+                  aria-label={isLiked ? 'Unlike this story' : 'Like this story'}
                   className={`flex items-center space-x-1 px-3 py-1 rounded-full transition-colors duration-200 ${
                     isLiked 
                       ? 'bg-pink-100 text-pink-600' 
@@ -237,6 +240,7 @@ const StoryDetail = () => {
                 </button>
                 <button
                   onClick={handleShare}
+                  aria-label="Share this story"
                   className="flex items-center space-x-1 px-3 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-pink-100 hover:text-pink-600 transition-colors duration-200"
                 >
                   <Share2 className="w-4 h-4" />
