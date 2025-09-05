@@ -14,13 +14,47 @@ const PORT = process.env.PORT || 5000;
 app.set('trust proxy', 1);
 
 app.use(helmet());
-app.use(cors());
+
+// Configure CORS for production frontend and localhost
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'https://localhost:3000',
+  'http://localhost:5000',
+  'https://localhost:5000'
+].filter(Boolean);
+
+const corsOptions = {
+  origin: function(origin, callback) {
+    console.log('CORS origin check:', { origin, allowedOrigins });
+    if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return callback(null, true);
+    }
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET','HEAD','PUT','PATCH','POST','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Normalize multiple slashes in URL path (e.g., //payment-success -> /payment-success)
+app.use((req, res, next) => {
+  if (typeof req.url === 'string' && req.url.startsWith('/')) {
+    req.url = req.url.replace(/\/{2,}/g, '/');
+  }
+  next();
+});
+
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 100, // Restored to normal rate limit
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -61,12 +95,11 @@ app.use('/api/payments', require('./routes/payments'));
 
 // Redirect Stripe return routes from backend to frontend domain in production
 app.get(['/payment-success', '/payment-cancelled'], (req, res) => {
-  const frontendUrl = process.env.FRONTEND_URL || 'https://tokyo-story-h4ty.vercel.app';
-  if (!frontendUrl) {
-    return res.status(500).send('FRONTEND_URL is not configured');
-  }
+  const frontendUrl = process.env.FRONTEND_URL || req.headers.origin || 'http://localhost:3000';
   const query = req.originalUrl.split('?')[1];
-  const target = `${frontendUrl}${req.path}${query ? `?${query}` : ''}`;
+  // Normalize any accidental double slashes to a single slash
+  const normalizedPath = (`/${req.path}`).replace(/\/+/, '/');
+  const target = `${frontendUrl.replace(/\/$/, '')}${normalizedPath}${query ? `?${query}` : ''}`;
   console.log(`🔁 Redirecting ${req.path} to frontend:`, target);
   res.redirect(302, target);
 });
@@ -109,8 +142,17 @@ app.get('/test-react', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
+  console.error('Global error handler:', {
+    path: req.path,
+    method: req.method,
+    message: err.message,
+    stack: err.stack
+  });
+  res.status(500).json({
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV !== 'production' ? err.message : undefined,
+    stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined
+  });
 });
 
 if (process.env.NODE_ENV === 'production') {

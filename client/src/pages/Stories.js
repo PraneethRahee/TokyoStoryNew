@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { User, Calendar, CheckCircle, AlertCircle, ShoppingCart, Check, PenTool } from 'lucide-react';
 import { storiesAPI, authAPI } from '../utils/api';
@@ -84,7 +84,7 @@ const Stories = () => {
     }
   ];
 
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     if (isAuthenticated) {
       try {
         const [purchased, myStoriesData] = await Promise.all([
@@ -97,9 +97,9 @@ const Stories = () => {
         console.error('Error fetching user data:', error);
       }
     }
-  };
+  }, [isAuthenticated]);
 
-  const fetchStories = async () => {
+  const fetchStories = useCallback(async () => {
     try {
       setLoading(true);
       const data = await storiesAPI.getAll();
@@ -137,12 +137,12 @@ const Stories = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // No dependencies since it doesn't use any state/props
 
   useEffect(() => {
     fetchStories();
     fetchUserData();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchStories, fetchUserData]); // ✅ Include memoized functions
 
   useEffect(() => {
     if (location.pathname === '/stories') {
@@ -150,7 +150,7 @@ const Stories = () => {
       fetchStories();
       fetchUserData();
     }
-  }, [location.pathname]);
+  }, [location.pathname, fetchStories, fetchUserData]); // ✅ Include memoized functions
 
   const formatDate = (dateString) => {
     if (!dateString) return '';

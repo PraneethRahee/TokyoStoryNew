@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MapPin, ShoppingCart, BookOpen, User, LogOut } from 'lucide-react';
+import { MapPin, ShoppingCart, BookOpen, User, LogOut, Ticket, CreditCard } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { usePurchase } from '../context/PurchaseContext';
 import { useAuth } from '../context/AuthContext';
@@ -56,6 +56,28 @@ const Navbar = () => {
                         {purchases.length}
                       </span>
                     )}
+                  </div>
+                </Link>
+                <Link 
+                  to="/raffle" 
+                  className={`font-medium transition-colors ${
+                    isActive('/raffle') ? 'text-pink-500' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <div className="flex items-center space-x-1">
+                    <Ticket className="w-4 h-4" />
+                    <span>Raffle</span>
+                  </div>
+                </Link>
+                <Link 
+                  to="/payments" 
+                  className={`font-medium transition-colors ${
+                    isActive('/payments') ? 'text-pink-500' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  <div className="flex items-center space-x-1">
+                    <CreditCard className="w-4 h-4" />
+                    <span>Payments</span>
                   </div>
                 </Link>
                 <Link 

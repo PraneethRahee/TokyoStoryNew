@@ -1,6 +1,46 @@
 const express = require('express');
 const router = express.Router();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const CheckoutSnapshot = require('../models/CheckoutSnapshot');
+const { auth } = require('../middleware/auth');
+
+router.post('/snapshot', auth, async (req, res) => {
+  try {
+    const { items, meta } = req.body;
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'items are required' });
+    }
+    const key = `${req.user._id}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    await CheckoutSnapshot.create({
+      key,
+      userId: req.user._id,
+      items: items.map(i => ({
+        storyId: i.id || i.storyId,
+        title: i.title,
+        price: Number(i.price),
+        quantity: i.quantity || 1,
+        imageUrl: i.imageUrl
+      })),
+      meta: meta || {},
+      expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000)
+    });
+    res.json({ key });
+  } catch (error) {
+    console.error('Create snapshot error:', error);
+    res.status(500).json({ message: 'Failed to create snapshot' });
+  }
+});
+
+router.get('/snapshot/:key', auth, async (req, res) => {
+  try {
+    const snap = await CheckoutSnapshot.findOne({ key: req.params.key, userId: req.user._id });
+    if (!snap) return res.status(404).json({ message: 'Snapshot not found' });
+    res.json({ items: snap.items, meta: snap.meta });
+  } catch (error) {
+    console.error('Get snapshot error:', error);
+    res.status(500).json({ message: 'Failed to get snapshot' });
+  }
+});
 
 router.post('/create-checkout-session', async (req, res) => {
   try {
@@ -10,8 +50,10 @@ router.post('/create-checkout-session', async (req, res) => {
       return res.status(400).json({ message: 'Invalid amount. Minimum $1.00 required.' });
     }
 
-    // Use frontend domain for success/cancel URLs
-    const frontendUrl = process.env.FRONTEND_URL || 'https://tokyo-story-h4ty.vercel.app';
+    // Resolve frontend URL smartly for dev/prod
+    const frontendUrl = process.env.FRONTEND_URL
+      || req.headers.origin
+      || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'http://localhost:3000');
     
     console.log('Payment session creation:', {
       frontendUrl,

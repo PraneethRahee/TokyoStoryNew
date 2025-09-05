@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import api from '../utils/api';
 
 const AuthContext = createContext();
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     try {
       setError(null);
       const response = await api.post('/auth/login', { email, password });
@@ -56,9 +56,9 @@ export const AuthProvider = ({ children }) => {
       setError(message);
       return { success: false, message };
     }
-  };
+  }, []);
 
-  const signup = async (userData) => {
+  const signup = useCallback(async (userData) => {
     try {
       setError(null);
       const response = await api.post('/auth/signup', userData);
@@ -74,16 +74,16 @@ export const AuthProvider = ({ children }) => {
       setError(message);
       return { success: false, message };
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     delete api.defaults.headers.common['Authorization'];
     setUser(null);
     setError(null);
-  };
+  }, []);
 
-  const updateProfile = async (profileData) => {
+  const updateProfile = useCallback(async (profileData) => {
     try {
       setError(null);
       const response = await api.put('/auth/profile', profileData);
@@ -94,9 +94,9 @@ export const AuthProvider = ({ children }) => {
       setError(message);
       return { success: false, message };
     }
-  };
+  }, []);
 
-  const changePassword = async (currentPassword, newPassword) => {
+  const changePassword = useCallback(async (currentPassword, newPassword) => {
     try {
       setError(null);
       await api.post('/auth/change-password', { currentPassword, newPassword });
@@ -106,13 +106,13 @@ export const AuthProvider = ({ children }) => {
       setError(message);
       return { success: false, message };
     }
-  };
+  }, []);
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     setError(null);
-  };
+  }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     loading,
     error,
@@ -123,7 +123,7 @@ export const AuthProvider = ({ children }) => {
     changePassword,
     clearError,
     isAuthenticated: !!user
-  };
+  }), [user, loading, error, login, signup, logout, updateProfile, changePassword, clearError]);
 
   return (
     <AuthContext.Provider value={value}>

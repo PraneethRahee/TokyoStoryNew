@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, ArrowLeft, Clock } from 'lucide-react';
 import { paymentsAPI, authAPI } from '../utils/api';
@@ -17,56 +17,120 @@ const PaymentSuccess = () => {
   const [error, setError] = useState(null);
   const [timeLeft, setTimeLeft] = useState(30);
   const sessionId = searchParams.get('session_id');
+  const processedSessions = useRef(new Set()); // Track processed sessions
 
-  // Clear cart on successful payment and add purchases
+  // Clear cart on successful payment and add purchases (client state)
   useEffect(() => {
     const cartItems = JSON.parse(localStorage.getItem('tokyoLoreCart') || '[]');
-    
     if (cartItems.length > 0) {
       addPurchase(cartItems);
-      
-      // Add purchased stories to user's database if authenticated
-      if (isAuthenticated && user) {
-        const addStoriesToDatabase = async () => {
-          try {
-            // Add each story to user's purchased list
-            for (const item of cartItems) {
-              if (item.id) {
-                await authAPI.purchaseStory(item.id);
-              }
-            }
-            console.log('Successfully added purchased stories to user database');
-          } catch (error) {
-            console.error('Error adding stories to user database:', error);
-            // Don't show error to user as payment was successful
-          }
-        };
-        
-        addStoriesToDatabase();
-      }
     }
-    
     clearCart();
-  }, [clearCart, addPurchase, isAuthenticated, user]);
+  }, [clearCart, addPurchase]);
 
+  // Fetch session and persist to DB based on metadata
+  // Note: We intentionally use user?._id instead of user to prevent infinite loops
+  // when the user object reference changes but the ID remains the same
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    const fetchSession = async () => {
-      if (sessionId) {
-        try {
-          const sessionData = await paymentsAPI.getSession(sessionId);
-          setSession(sessionData);
-        } catch (error) {
-          setError('Failed to load payment details. Your payment was successful, but we could not retrieve the details.');
-        } finally {
-          setLoading(false);
+    const persistPurchase = async () => {
+      if (!sessionId || !isAuthenticated || !user) {
+        setLoading(false);
+        return;
+      }
+
+      // Prevent processing the same session multiple times
+      if (processedSessions.current.has(sessionId)) {
+        setLoading(false);
+        return;
+      }
+      try {
+        // Mark session as being processed
+        processedSessions.current.add(sessionId);
+        
+        const s = await paymentsAPI.getSession(sessionId);
+        setSession(s);
+
+        // If raffle purchase, record raffle entries
+        if (s?.metadata?.type === 'raffle' && s?.metadata?.tickets) {
+          try {
+            await authAPI.recordRaffleEntry({
+              tickets: Number(s.metadata.tickets),
+              amount: s.amount_total,
+              sessionId
+            });
+          } catch (e) {
+            console.error('Failed to record raffle entry:', e);
+          }
         }
-      } else {
+
+        // If cart checkout, record purchase + purchased stories
+        if (s?.metadata?.type === 'cart_checkout') {
+          let cartItems = [];
+
+          // Prefer server-side snapshot if present
+          if (s.metadata?.snapshotKey) {
+            try {
+              const token = localStorage.getItem('token');
+              const headers = token ? { Authorization: `Bearer ${token}` } : {};
+              const resp = await fetch(`/api/payments/snapshot/${s.metadata.snapshotKey}`, { headers });
+              if (resp.ok) {
+                const data = await resp.json();
+                cartItems = data.items || [];
+              }
+            } catch (e) {
+              console.warn('Failed to fetch server snapshot, will use local fallback');
+            }
+          }
+
+          // Fallback to local snapshot
+          if (!Array.isArray(cartItems) || cartItems.length === 0) {
+            cartItems = JSON.parse(localStorage.getItem('tokyoLoreCartSnapshot') || '[]');
+          }
+
+          if (Array.isArray(cartItems) && cartItems.length > 0) {
+            // Record purchase history
+            try {
+              const itemsPayload = cartItems.map(ci => ({
+                storyId: ci.id || ci.storyId,
+                title: ci.title,
+                price: Math.round((ci.price || 0) * 100), // in cents
+                quantity: ci.quantity || 1
+              }));
+              await authAPI.recordPurchase({
+                items: itemsPayload,
+                amount: s.amount_total,
+                sessionId
+              });
+            } catch (e) {
+              console.error('Failed to record purchase history:', e);
+            }
+
+            // Add purchased stories to user's purchasedStories
+            try {
+              const storyIds = cartItems
+                .map(ci => ci.id || ci.storyId)
+                .filter(Boolean);
+              if (storyIds.length > 0) {
+                await authAPI.purchaseStories(storyIds);
+              }
+            } catch (e) {
+              console.error('Failed to add purchased stories:', e);
+            }
+          }
+        }
+      } catch (e) {
+        setError('Failed to load payment details. Your payment was successful, but we could not retrieve the details.');
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchSession();
-  }, [sessionId]);
+    persistPurchase();
+  }, [sessionId, isAuthenticated, user?._id]); // ✅ Use user._id to prevent unnecessary re-runs
+
+  // Keep a snapshot of cart before redirect (should be set on checkout trigger)
+  // You can set this snapshot in your checkout flow when creating the session
 
   // Countdown timer effect
   useEffect(() => {
@@ -263,18 +327,6 @@ const PaymentSuccess = () => {
               <Link
                 to="/"
                 className="inline-flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: '#ec4899',
-                  color: 'white',
-                  fontWeight: '500',
-                  padding: '0.75rem 1.5rem',
-                  borderRadius: '0.5rem',
-                  textDecoration: 'none',
-                  transition: 'background-color 0.2s'
-                }}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Go to Home Page
@@ -288,13 +340,7 @@ const PaymentSuccess = () => {
               </Link>
             </div>
             
-            <div 
-              className="text-sm text-gray-500"
-              style={{
-                fontSize: '0.875rem',
-                color: '#6b7280'
-              }}
-            >
+            <div className="text-sm text-gray-500">
               A confirmation email has been sent to your email address.
             </div>
           </div>

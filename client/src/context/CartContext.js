@@ -1,9 +1,13 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback } from 'react';
+import { useAuth } from './AuthContext';
+import { cartAPI } from '../utils/api';
 
 const CartContext = createContext();
 
 const cartReducer = (state, action) => {
   switch (action.type) {
+    case 'SET_CART':
+      return { ...state, items: action.payload };
     case 'ADD_TO_CART':
       const existingItem = state.items.find(item => item.id === action.payload.id);
       if (existingItem) {
@@ -21,13 +25,11 @@ const cartReducer = (state, action) => {
           items: [...state.items, { ...action.payload, quantity: 1 }]
         };
       }
-    
     case 'REMOVE_FROM_CART':
       return {
         ...state,
         items: state.items.filter(item => item.id !== action.payload)
       };
-    
     case 'UPDATE_QUANTITY':
       return {
         ...state,
@@ -37,19 +39,21 @@ const cartReducer = (state, action) => {
             : item
         )
       };
-    
     case 'CLEAR_CART':
       return {
         ...state,
         items: []
       };
-    
     default:
       return state;
   }
 };
 
 export const CartProvider = ({ children }) => {
+  const { isAuthenticated, user } = useAuth();
+  const hasSynced = useRef(false); // Track if we've already synced
+  const lastUserId = useRef(null); // Track the last user ID we synced for
+
   // Initialize state with items from localStorage
   const getInitialState = () => {
     const savedCart = localStorage.getItem('tokyoLoreCart');
@@ -71,29 +75,74 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('tokyoLoreCart', JSON.stringify(state.items));
   }, [state.items]);
 
-  const addToCart = (story) => {
+  // Sync cart from server after login (only once per user)
+  useEffect(() => {
+    const syncFromServer = async () => {
+      if (!isAuthenticated || !user?._id) return;
+      
+      // Check if we've already synced for this user
+      if (hasSynced.current && lastUserId.current === user._id) return;
+      
+      hasSynced.current = true; // Mark as synced
+      lastUserId.current = user._id; // Track which user we synced for
+      
+      try {
+        const items = await cartAPI.get();
+        // Map server format to client format (storyId -> id)
+        const mapped = items.map(i => ({
+          id: i.storyId,
+          title: i.title,
+          price: i.price,
+          quantity: i.quantity,
+          imageUrl: i.imageUrl
+        }));
+        dispatch({ type: 'SET_CART', payload: mapped });
+      } catch (e) {
+        console.warn('Failed to sync cart from server');
+        hasSynced.current = false; // Reset on error so it can retry
+        lastUserId.current = null;
+      }
+    };
+    syncFromServer();
+  }, [isAuthenticated, user?._id]);
+
+  const addToCart = useCallback(async (story) => {
     dispatch({ type: 'ADD_TO_CART', payload: story });
-  };
+    if (isAuthenticated) {
+      try {
+        await cartAPI.add({ storyId: story.id, title: story.title, price: story.price, imageUrl: story.imageUrl });
+      } catch {}
+    }
+  }, [isAuthenticated]);
 
-  const removeFromCart = (storyId) => {
+  const removeFromCart = useCallback(async (storyId) => {
     dispatch({ type: 'REMOVE_FROM_CART', payload: storyId });
-  };
+    if (isAuthenticated) {
+      try { await cartAPI.remove(storyId); } catch {}
+    }
+  }, [isAuthenticated]);
 
-  const updateQuantity = (storyId, quantity) => {
+  const updateQuantity = useCallback(async (storyId, quantity) => {
     dispatch({ type: 'UPDATE_QUANTITY', payload: { id: storyId, quantity } });
-  };
+    if (isAuthenticated) {
+      try { await cartAPI.updateQuantity(storyId, quantity); } catch {}
+    }
+  }, [isAuthenticated]);
 
-  const clearCart = () => {
+  const clearCart = useCallback(async () => {
     dispatch({ type: 'CLEAR_CART' });
-  };
+    if (isAuthenticated) {
+      try { await cartAPI.clear(); } catch {}
+    }
+  }, [isAuthenticated]);
 
-  const getTotalItems = () => {
+  const getTotalItems = useCallback(() => {
     return state.items.reduce((total, item) => total + item.quantity, 0);
-  };
+  }, [state.items]);
 
-  const getTotalPrice = () => {
+  const getTotalPrice = useCallback(() => {
     return state.items.reduce((total, item) => total + (item.price * item.quantity), 0);
-  };
+  }, [state.items]);
 
   return (
     <CartContext.Provider value={{

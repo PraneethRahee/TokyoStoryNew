@@ -1,6 +1,21 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+const purchaseItemSchema = new mongoose.Schema({
+  storyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Story' },
+  title: { type: String },
+  price: { type: Number },
+  quantity: { type: Number, default: 1 }
+}, { _id: false });
+
+const cartItemSchema = new mongoose.Schema({
+  storyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Story', required: true },
+  title: { type: String, required: true },
+  price: { type: Number, required: true },
+  quantity: { type: Number, default: 1 },
+  imageUrl: { type: String }
+}, { _id: false });
+
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -42,6 +57,21 @@ const userSchema = new mongoose.Schema({
   purchasedStories: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Story'
+  }],
+  // Per-user cart
+  cartItems: [cartItemSchema],
+  raffleEntries: { type: Number, default: 0 },
+  raffleHistory: [{
+    tickets: { type: Number, required: true },
+    amount: { type: Number, required: true }, // in cents
+    sessionId: { type: String },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  purchaseHistory: [{
+    items: [purchaseItemSchema],
+    amount: { type: Number, required: true }, // in cents
+    sessionId: { type: String },
+    createdAt: { type: Date, default: Date.now }
   }]
 }, {
   timestamps: true

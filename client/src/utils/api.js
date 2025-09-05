@@ -9,6 +9,17 @@ const api = axios.create({
   },
 });
 
+// Add request interceptor to log API calls
+api.interceptors.request.use(
+  (config) => {
+    console.log(`🚀 API Call: ${config.method?.toUpperCase()} ${config.url}`);
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 // Stories API
 export const storiesAPI = {
   // Get all stories
@@ -124,6 +135,39 @@ export const authAPI = {
     }
   },
 
+  // Bulk add stories to purchased list
+  purchaseStories: async (storyIds) => {
+    try {
+      const response = await api.post('/auth/purchase-stories', { storyIds });
+      return response.data;
+    } catch (error) {
+      console.error('Error purchasing stories:', error);
+      throw error;
+    }
+  },
+
+  // Record raffle entry
+  recordRaffleEntry: async ({ tickets, amount, sessionId }) => {
+    try {
+      const response = await api.post('/auth/raffle-entry', { tickets, amount, sessionId });
+      return response.data;
+    } catch (error) {
+      console.error('Error recording raffle entry:', error);
+      throw error;
+    }
+  },
+
+  // Record cart purchase
+  recordPurchase: async ({ items, amount, sessionId }) => {
+    try {
+      const response = await api.post('/auth/record-purchase', { items, amount, sessionId });
+      return response.data;
+    } catch (error) {
+      console.error('Error recording purchase:', error);
+      throw error;
+    }
+  },
+
   // Get user's own published stories
   getMyStories: async () => {
     try {
@@ -134,6 +178,36 @@ export const authAPI = {
       return [];
     }
   },
+};
+
+export const cartAPI = {
+  get: async () => {
+    const resp = await api.get('/auth/cart');
+    return resp.data.items || [];
+  },
+  add: async (item) => {
+    const resp = await api.post('/auth/cart', item);
+    return resp.data.items || [];
+  },
+  updateQuantity: async (storyId, quantity) => {
+    const resp = await api.patch('/auth/cart/quantity', { storyId, quantity });
+    return resp.data.items || [];
+  },
+  remove: async (storyId) => {
+    const resp = await api.delete(`/auth/cart/${storyId}`);
+    return resp.data.items || [];
+  },
+  clear: async () => {
+    const resp = await api.delete('/auth/cart');
+    return resp.data.items || [];
+  }
+};
+
+export const historyAPI = {
+  getPaymentHistory: async () => {
+    const resp = await api.get('/auth/payment-history');
+    return resp.data;
+  }
 };
 
 export default api;

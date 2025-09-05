@@ -30,6 +30,25 @@ const Checkout = () => {
 
     setIsLoading(true);
     try {
+      // Save a snapshot of the cart for post-payment persistence (client fallback)
+      localStorage.setItem('tokyoLoreCartSnapshot', JSON.stringify(items));
+
+      // Create a server-side snapshot and get key
+      let snapshotKey = null;
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const resp = await fetch('/api/payments/snapshot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...headers },
+          body: JSON.stringify({ items })
+        });
+        const data = await resp.json();
+        if (resp.ok && data.key) snapshotKey = data.key;
+      } catch (err) {
+        console.warn('Snapshot creation failed, falling back to local storage snapshot');
+      }
+
       // Create checkout session with cart total
       const totalAmount = Math.round(getTotalPrice() * 100); // Convert to cents
       
@@ -40,6 +59,7 @@ const Checkout = () => {
           type: 'cart_checkout',
           customerEmail: formData.email,
           customerName: formData.name,
+          snapshotKey: snapshotKey || '',
           items: items.map(item => `${item.title} (${item.quantity})`).join(', ')
         }
       });
@@ -49,6 +69,8 @@ const Checkout = () => {
     } catch (error) {
       console.error('Error creating checkout session:', error);
       alert('Failed to process checkout. Please try again.');
+      // Cleanup snapshot on failure
+      localStorage.removeItem('tokyoLoreCartSnapshot');
     } finally {
       setIsLoading(false);
     }

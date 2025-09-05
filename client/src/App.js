@@ -19,6 +19,8 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import ProtectedRoute from './components/ProtectedRoute';
+import Raffle from './pages/Raffle';
+import PaymentHistory from './pages/PaymentHistory';
 import './index.css';
 
 function App() {
@@ -60,6 +62,16 @@ function App() {
                   <Route path="/purchased" element={
                     <ProtectedRoute>
                       <PurchasedStories />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/raffle" element={
+                    <ProtectedRoute>
+                      <Raffle />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/payments" element={
+                    <ProtectedRoute>
+                      <PaymentHistory />
                     </ProtectedRoute>
                   } />
                   <Route path="/payment-success" element={<PaymentSuccess />} />

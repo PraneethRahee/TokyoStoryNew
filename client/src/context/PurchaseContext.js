@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 
 const PurchaseContext = createContext();
 
@@ -57,21 +57,21 @@ export const PurchaseProvider = ({ children }) => {
     localStorage.setItem('tokyoLorePurchases', JSON.stringify(state.purchases));
   }, [state.purchases]);
 
-  const addPurchase = (items) => {
+  const addPurchase = useCallback((items) => {
     dispatch({ type: 'ADD_PURCHASE', payload: { items } });
-  };
+  }, []);
 
-  const clearPurchases = () => {
+  const clearPurchases = useCallback(() => {
     dispatch({ type: 'CLEAR_PURCHASES' });
-  };
+  }, []);
 
-  const getPurchasedStories = () => {
+  const getPurchasedStories = useCallback(() => {
     return state.purchases;
-  };
+  }, [state.purchases]);
 
-  const isStoryPurchased = (storyId) => {
+  const isStoryPurchased = useCallback((storyId) => {
     return state.purchases.some(purchase => purchase.id === storyId);
-  };
+  }, [state.purchases]);
 
   return (
     <PurchaseContext.Provider value={{
